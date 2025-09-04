@@ -10,9 +10,12 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 
-
 const userRoutes = require("./src/routes/userRoutes");
+const convocatoriaRoutes = require("./src/routes/convocatoriaRoutes");
+const { createTable } = require("./src/models/convocatoriaModel");
+
 app.use("/api/users", userRoutes);
+app.use("/api/convocatorias", convocatoriaRoutes);
 
 app.get("/", (req, res) => {
   res.send("Servidor funcionando ");
@@ -24,4 +27,7 @@ app.listen(PORT, async () => {
 
   console.log(" Probando conexión a la base de datos...");
   await testConnection();
+
+  console.log(" Inicializando tablas...");
+  await createTable();
 });
