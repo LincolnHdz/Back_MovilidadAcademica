@@ -12,10 +12,14 @@ app.use(cors());
 
 const userRoutes = require("./src/routes/userRoutes");
 const convocatoriaRoutes = require("./src/routes/convocatoriaRoutes");
+const authRoutes = require("./src/routes/authRoutes");
+
 const { createTable } = require("./src/models/convocatoriaModel");
+const { createUserTable } = require("./src/models/userModel");
 
 app.use("/api/users", userRoutes);
 app.use("/api/convocatorias", convocatoriaRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Servidor funcionando ");
@@ -30,4 +34,5 @@ app.listen(PORT, async () => {
 
   console.log(" Inicializando tablas...");
   await createTable();
+  await createUserTable();
 });
