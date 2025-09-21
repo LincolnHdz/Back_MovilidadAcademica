@@ -30,8 +30,8 @@ const register = async (req, res) => {
         
         // recortar los espacios en blanco del correo
         const trimmedEmail = email.trim(); 
-        // validar formato de correo 
-        const emailRegex = /^(a\d{6}@alumnos\.uaslp\.mx|[^\s@]+@uaslp\.mx)$/;
+        // validar formato de correo axxxxxx@alumnos.uaslp, xxxx@uaslp.mx o cualquier otro dominio
+        const emailRegex = /^(a\d{6}@alumnos\.uaslp\.mx|[^\s@]+@uaslp\.mx)|[^\s@]+@[^\s@]+\.[^\s@]$/; 
         if (!emailRegex.test(trimmedEmail)) {
             console.log('Correo recibido:', trimmedEmail);
             console.log('Resultado de la validación:', emailRegex.test(trimmedEmail));
