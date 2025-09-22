@@ -16,6 +16,9 @@ const authRoutes = require("./src/routes/authRoutes");
 
 const { createTable } = require("./src/models/convocatoriaModel");
 const { createUserTable } = require("./src/models/userModel");
+const { createUniversidadTable } = require("./src/models/universidadModel");
+const { createCarreraTable } = require("./src/models/carreraModel");
+const { createMateriaTable } = require("./src/models/materiaModel");
 
 app.use("/api/users", userRoutes);
 app.use("/api/convocatorias", convocatoriaRoutes);
@@ -35,4 +38,7 @@ app.listen(PORT, async () => {
   console.log(" Inicializando tablas...");
   await createTable();
   await createUserTable();
+  await createUniversidadTable();
+  await createCarreraTable();
+  await createMateriaTable();
 });
