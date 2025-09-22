@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { authMiddleware, requireRole } = require("../middleware/authMiddleware");
 const {
   getConvocatorias,
   getConvocatoria,
@@ -14,13 +15,13 @@ router.get("/", getConvocatorias);
 //  Obtener una convocatoria por ID
 router.get("/:id", getConvocatoria);
 
-//  Crear nueva convocatoria
-router.post("/", createNewConvocatoria);
+//  Crear nueva convocatoria (becarios y administrador)
+router.post("/", authMiddleware, requireRole(["becarios", "administrador"]), createNewConvocatoria);
 
-//  Actualizar convocatoria
-router.put("/:id", updateConvocatoriaById);
+//  Actualizar convocatoria (becarios y administrador)
+router.put("/:id", authMiddleware, requireRole(["becarios", "administrador"]), updateConvocatoriaById);
 
-// Eliminar convocatoria
-router.delete("/:id", deleteConvocatoriaById);
+// Eliminar convocatoria (administrador)
+router.delete("/:id", authMiddleware, requireRole(["administrador"]), deleteConvocatoriaById);
 
 module.exports = router;

@@ -1,19 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 const {
-    register,
-    login,
-    getProfile,
-    verifyToken
-} = require('../controllers/authController');
+  register,
+  login,
+  getProfile,
+  verifyToken,
+} = require("../controllers/authController");
 
 // rutas publicas
-router.post('/register', register);
-router.post('/login', login);
+router.post("/register", register);
+router.post("/login", login);
 
 // rutas privadas ( requieren autenticacion )
-router.get('/profile', verifyToken, getProfile);
-router.get('/verify', verifyToken);
+router.get("/profile", authMiddleware, getProfile);
+router.get("/verify", authMiddleware, verifyToken);
 
 module.exports = router;

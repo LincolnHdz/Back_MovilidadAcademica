@@ -3,7 +3,8 @@ const { findUserById } = require("../models/userModel");
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const authHeader = req.headers("authorization");
+    const authHeader =
+      req.headers["authorization"] || req.header("authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
@@ -26,7 +27,7 @@ const authMiddleware = async (req, res, next) => {
     }
 
     // agregar informacion del usuario al objeto req
-    req.user = decoded;
+    req.user = { id: user.id };
     next();
   } catch (error) {
     console.error("Error in authMiddleware:", error);
@@ -65,14 +66,14 @@ const requireRole = (roles) => {
         });
       }
 
-      if (!roles.includes(user.role)) {
+      if (!roles.includes(user.rol)) {
         return res.status(403).json({
           success: false,
           message: "Acceso denegado. Permisos insuficientes.",
         });
       }
 
-      req.userRole = user.role;
+      req.userRole = user.rol;
       next();
     } catch (error) {
       console.error("Error en requireRole:", error);
