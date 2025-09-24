@@ -6,7 +6,8 @@ const createUserTable = async () => {
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         nombres VARCHAR(255) NOT NULL,
-        apellidos VARCHAR(255) NOT NULL,
+        apellido_paterno VARCHAR(255) NOT NULL,
+        apellido_materno VARCHAR(255) NOT NULL,
         clave VARCHAR(10) UNIQUE NOT NULL,
         telefono VARCHAR(15),
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -27,7 +28,7 @@ const createUserTable = async () => {
 };
 
 const createUser = async (userData) => {
-  const { nombres, apellidos, clave, telefono, email, password, rol } =
+  const { nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol } =
     userData;
 
   try {
@@ -46,8 +47,8 @@ const createUser = async (userData) => {
 
     // Crear el nuevo usuario
     const newUser = await query(
-      "INSERT INTO users (nombres, apellidos, clave, telefono, email, password, rol) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-      [nombres, apellidos, clave, telefono, email, hashedPassword, rol]
+      "INSERT INTO users (nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+      [nombres, apellido_paterno, apellido_materno, clave, telefono, email, hashedPassword, rol]
     );
 
     return newUser.rows[0];

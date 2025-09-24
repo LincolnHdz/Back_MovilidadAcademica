@@ -18,10 +18,10 @@ const generateToken = (userId) => {
 // registro de usuario
 const register = async (req, res) => {
   try {
-    const { nombres, apellidos, clave, email, password } = req.body;
+    const { nombres, apellido_paterno, apellido_materno, clave, email, password } = req.body;
 
     //validaciones
-    if (!nombres || !apellidos || !clave || !email || !password) {
+    if (!nombres || !apellido_paterno || !apellido_materno || !clave || !email || !password) {
       return res.status(400).json({
         success: false,
         message: "Todos los campos son obligatorios",
@@ -32,7 +32,7 @@ const register = async (req, res) => {
     const trimmedEmail = email.trim();
     // validar formato de correo axxxxxx@alumnos.uaslp, xxxx@uaslp.mx o cualquier otro dominio
     const emailRegex =
-      /^(a\d{6}@alumnos\.uaslp\.mx|[^\s@]+@uaslp\.mx)|[^\s@]+@[^\s@]+\.[^\s@]$/;
+      /^(a\d{6}@alumnos\.uaslp\.mx|[^\s@]+@uaslp\.mx|[^\s@]+@[^\s@]+\.[^\s@]+)$/;
     if (!emailRegex.test(trimmedEmail)) {
       console.log("Correo recibido:", trimmedEmail);
       console.log("Resultado de la validación:", emailRegex.test(trimmedEmail));
@@ -54,7 +54,8 @@ const register = async (req, res) => {
     const rol = "alumno";
     const newUser = await createUser({
       nombres,
-      apellidos,
+      apellido_paterno,
+      apellido_materno,
       clave,
       telefono: null,
       email,

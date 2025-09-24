@@ -8,6 +8,7 @@ const createTable = async () => {
       titulo VARCHAR(255) NOT NULL,
       descripcion TEXT NOT NULL,
       fecha DATE NOT NULL,
+      imagen VARCHAR(255),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -50,11 +51,11 @@ const getConvocatoriaById = async (id) => {
 
 
 const createConvocatoria = async (convocatoriaData) => {
-  const { titulo, descripcion, fecha } = convocatoriaData;
+  const { titulo, descripcion, fecha, imagen } = convocatoriaData;
   try {
     const result = await query(
-      "INSERT INTO convocatorias (titulo, descripcion, fecha) VALUES ($1, $2, $3) RETURNING *",
-      [titulo, descripcion, fecha]
+      "INSERT INTO convocatorias (titulo, descripcion, fecha, imagen) VALUES ($1, $2, $3, $4) RETURNING *",
+      [titulo, descripcion, fecha, imagen]
     );
     return result.rows[0];
   } catch (error) {
@@ -65,11 +66,11 @@ const createConvocatoria = async (convocatoriaData) => {
 
 
 const updateConvocatoria = async (id, convocatoriaData) => {
-  const { titulo, descripcion, fecha } = convocatoriaData;
+  const { titulo, descripcion, fecha, imagen } = convocatoriaData;
   try {
     const result = await query(
-      "UPDATE convocatorias SET titulo = $1, descripcion = $2, fecha = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *",
-      [titulo, descripcion, fecha, id]
+      "UPDATE convocatorias SET titulo = $1, descripcion = $2, fecha = $3, imagen = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5 RETURNING *",
+      [titulo, descripcion, fecha, imagen, id]
     );
     return result.rows[0];
   } catch (error) {

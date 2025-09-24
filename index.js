@@ -3,6 +3,7 @@ const morgan = require("morgan");
 require("dotenv").config();
 const cors = require("cors");
 const { testConnection } = require("./src/config/database");
+const path = require("path");
 
 const app = express();
 
@@ -10,20 +11,42 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 
-const userRoutes = require("./src/routes/user.routes");
-const convocatoriaRoutes = require("./src/routes/convocatoria.routes");
-const authRoutes = require("./src/routes/auth.routes");
+const userRoutes = require("./src/routes/userRoutes");
+const convocatoriaRoutes = require("./src/routes/convocatoriaRoutes");
+const authRoutes = require("./src/routes/authRoutes");
+const applicationRoutes = require("./src/routes/application.routes");
 
 const { createTable } = require("./src/models/convocatoriaModel");
 const { createUserTable } = require("./src/models/userModel");
 const { createUniversidadTable } = require("./src/models/universidadModel");
 const { createCarreraTable } = require("./src/models/carreraModel");
 const { createMateriaTable } = require("./src/models/materiaModel");
+const { createApplicationTable } = require("./src/models/applicationModel");
 
 app.use("/api/users", userRoutes);
 app.use("/api/convocatorias", convocatoriaRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/applications", require("./src/routes/application.routes"));
+app.use("/api/applications", applicationRoutes);
+
+// Ruta para descargar archivos directamente
+const fs = require('fs');
+app.get('/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', filename);
+  
+  // Verificar si el archivo existe
+  if (fs.existsSync(filePath)) {
+    // Configurar headers para forzar la descarga
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    
+    // Enviar el archivo
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } else {
+    res.status(404).send('Archivo no encontrado');
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Servidor funcionando ");
@@ -42,4 +65,5 @@ app.listen(PORT, async () => {
   await createUniversidadTable();
   await createCarreraTable();
   await createMateriaTable();
+  await createApplicationTable();
 });

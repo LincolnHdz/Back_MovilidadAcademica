@@ -27,7 +27,11 @@ const authMiddleware = async (req, res, next) => {
     }
 
     // agregar informacion del usuario al objeto req
-    req.user = { id: user.id };
+    req.user = { 
+      id: user.id,
+      clave: user.clave,
+      rol: user.rol
+    };
     next();
   } catch (error) {
     console.error("Error in authMiddleware:", error);

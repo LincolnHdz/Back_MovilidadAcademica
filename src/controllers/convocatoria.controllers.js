@@ -57,6 +57,10 @@ const getConvocatoria = async (req, res) => {
 const createNewConvocatoria = async (req, res) => {
   try {
     const { titulo, descripcion, fecha } = req.body;
+    let imagen = null;
+    if (req.file) {
+      imagen = `/uploads/${req.file.filename}`;
+    }
     
     // Validaciones básicas
     if (!titulo || !descripcion || !fecha) {
@@ -79,6 +83,7 @@ const createNewConvocatoria = async (req, res) => {
       titulo,
       descripcion,
       fecha,
+      imagen,
     });
     
     res.status(201).json({
@@ -101,6 +106,10 @@ const updateConvocatoriaById = async (req, res) => {
   try {
     const { id } = req.params;
     const { titulo, descripcion, fecha } = req.body;
+    let imagen = req.body.imagen || null;
+    if (req.file) {
+      imagen = `/uploads/${req.file.filename}`;
+    }
     
     // Validaciones básicas
     if (!titulo || !descripcion || !fecha) {
@@ -123,6 +132,7 @@ const updateConvocatoriaById = async (req, res) => {
       titulo,
       descripcion,
       fecha,
+      imagen,
     });
     
     if (!convocatoriaActualizada) {
@@ -151,15 +161,25 @@ const updateConvocatoriaById = async (req, res) => {
 const deleteConvocatoriaById = async (req, res) => {
   try {
     const { id } = req.params;
+    // Obtener la convocatoria antes de eliminar para saber la imagen
+    const convocatoria = await getConvocatoriaById(id);
     const convocatoriaEliminada = await deleteConvocatoria(id);
-    
     if (!convocatoriaEliminada) {
       return res.status(404).json({
         success: false,
         message: "Convocatoria no encontrada",
       });
     }
-    
+    // Eliminar imagen del disco si existe
+    if (convocatoria && convocatoria.imagen) {
+      const fs = require('fs');
+      const imagePath = require('path').join(__dirname, '../../', convocatoria.imagen);
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.warn('No se pudo eliminar la imagen:', imagePath);
+        }
+      });
+    }
     res.status(200).json({
       success: true,
       data: convocatoriaEliminada,

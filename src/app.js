@@ -11,12 +11,16 @@ const app = express();
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Para manejar datos de formularios
+
+// Servir archivos estáticos de la carpeta uploads
+app.use('/uploads', express.static('uploads'));
 
 // Rutas
 app.use("/api/users", require("./routes/user.routes"));
 app.use("/api/convocatorias", require("./routes/convocatoria.routes"));
 app.use("/api/auth", require("./routes/auth.routes"));
-app.use("/api/application", require("./routes/application.routes"));
+app.use("/api/applications", require("./routes/application.routes"));
 
 // Ruta de prueba
 app.get("/", (req, res) => {
