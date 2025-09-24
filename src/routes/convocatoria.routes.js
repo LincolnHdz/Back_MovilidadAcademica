@@ -7,7 +7,7 @@ const {
   createNewConvocatoria,
   updateConvocatoriaById,
   deleteConvocatoriaById,
-} = require("../controllers/convocatoriaController");
+} = require("../controllers/convocatoria.controllers");
 
 //  Obtener todas las convocatorias
 router.get("/", getConvocatorias);
