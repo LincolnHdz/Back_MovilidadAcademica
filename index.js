@@ -10,9 +10,9 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 
-const userRoutes = require("./src/routes/userRoutes");
-const convocatoriaRoutes = require("./src/routes/convocatoriaRoutes");
-const authRoutes = require("./src/routes/authRoutes");
+const userRoutes = require("./src/routes/user.routes");
+const convocatoriaRoutes = require("./src/routes/convocatoria.routes");
+const authRoutes = require("./src/routes/auth.routes");
 
 const { createTable } = require("./src/models/convocatoriaModel");
 const { createUserTable } = require("./src/models/userModel");
@@ -23,6 +23,7 @@ const { createMateriaTable } = require("./src/models/materiaModel");
 app.use("/api/users", userRoutes);
 app.use("/api/convocatorias", convocatoriaRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/applications", require("./src/routes/application.routes"));
 
 app.get("/", (req, res) => {
   res.send("Servidor funcionando ");
