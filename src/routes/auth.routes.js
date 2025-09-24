@@ -7,7 +7,7 @@ const {
   login,
   getProfile,
   verifyToken,
-} = require("../controllers/authController");
+} = require("../controllers/auth.controllers");
 
 // rutas publicas
 router.post("/register", register);
@@ -18,3 +18,4 @@ router.get("/profile", authMiddleware, getProfile);
 router.get("/verify", authMiddleware, verifyToken);
 
 module.exports = router;
+
