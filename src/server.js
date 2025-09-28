@@ -9,6 +9,9 @@ const { createUserTable } = require("./models/userModel");
 const { createUniversidadTable } = require("./models/universidadModel");
 const { createCarreraTable } = require("./models/carreraModel");
 const { createMateriaTable } = require("./models/materiaModel");
+const { createApplicationTable } = require("./models/applicationModel");
+const { createBecaTable } = require("./models/becaModel");
+const { createFacultadTable } = require("./models/facultadModel");
 
 const PORT = process.env.PORT || 3000;
 
@@ -17,12 +20,18 @@ const startServer = async () => {
     console.log("Probando conexión a la base de datos...");
     await testConnection();
 
-  /*  console.log("Inicializando tablas...");
-    await createTable();
-    await createUserTable();
-    await createUniversidadTable();
-    await createCarreraTable();
-    await createMateriaTable();*/
+    console.log("Tablas ya inicializadas previamente.");
+    // Comentamos la inicialización de tablas para evitar recrearlas en cada ejecución
+    /*
+    await createTable(); // Convocatorias
+    await createUniversidadTable(); // Crear universidades primero
+    await createFacultadTable(); // Facultades depende de universidades
+    await createCarreraTable(); // Carreras
+    await createMateriaTable(); // Materias
+    await createBecaTable(); // Becas
+    await createUserTable(); // Users depende de varias tablas anteriores
+    await createApplicationTable(); // Applications depende de users
+    */
 
     app.listen(PORT, () => {
       console.log(`Servidor corriendo en http://localhost:${PORT}`);

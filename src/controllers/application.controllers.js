@@ -10,13 +10,23 @@ const addApplication = async (req, res) => {
       apellidoMaterno,
       apellidoPaterno,
       clave,
-      claveMateria,
       cicloEscolar,
       universidad,
       carrera,
-      materia,
+      materiasInteres,
       comentarios = ''
     } = req.body;
+    
+    // Parsear las materias de interés si vienen como string JSON
+    let parsedMateriasInteres = [];
+    if (materiasInteres) {
+      try {
+        parsedMateriasInteres = typeof materiasInteres === 'string' ? JSON.parse(materiasInteres) : materiasInteres;
+        console.log("Materias de interés parseadas:", parsedMateriasInteres);
+      } catch (error) {
+        console.error("Error al parsear materiasInteres:", error);
+      }
+    }
 
     // Información del archivo
     let archivoInfo = {};
@@ -38,11 +48,10 @@ const addApplication = async (req, res) => {
         apellidoMaterno VARCHAR(100),
         apellidoPaterno VARCHAR(100),
         clave VARCHAR(50),
-        claveMateria VARCHAR(50),
         cicloEscolar VARCHAR(50),
         universidad VARCHAR(100),
         carrera VARCHAR(100),
-        materia VARCHAR(100),
+        materiasInteres JSONB DEFAULT '[]', 
         archivo JSONB,
         estado VARCHAR(50) DEFAULT 'pendiente',
         comentarios TEXT,
@@ -60,8 +69,8 @@ const addApplication = async (req, res) => {
     // Insertar datos
     const insertData = `
       INSERT INTO applications 
-      (nombre, apellidoMaterno, apellidoPaterno, clave, claveMateria, cicloEscolar, universidad, carrera, materia, archivo, userId, comentarios) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, carrera, materiasInteres, archivo, userId, comentarios) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       RETURNING *
     `;
 
@@ -70,11 +79,10 @@ const addApplication = async (req, res) => {
       apellidoMaterno,
       apellidoPaterno,
       userClave, // Mantenemos la clave solo como campo informativo
-      claveMateria,
       cicloEscolar,
       universidad,
       carrera,
-      materia,
+      JSON.stringify(parsedMateriasInteres),
       JSON.stringify(archivoInfo),
       userId, // Este es ahora el campo principal para la relación
       comentarios

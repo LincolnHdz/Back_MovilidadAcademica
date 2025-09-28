@@ -9,14 +9,14 @@ const createApplicationTable = async () => {
         apellidoMaterno VARCHAR(100),
         apellidoPaterno VARCHAR(100),
         clave VARCHAR(50),
-        claveMateria VARCHAR(50),
         cicloEscolar VARCHAR(50),
         universidad VARCHAR(100),
         carrera VARCHAR(100),
-        materia VARCHAR(100),
+        materiasInteres JSONB DEFAULT '[]',
         archivo JSONB,
         estado VARCHAR(50) DEFAULT 'pendiente',
         comentarios TEXT,
+        userId INTEGER REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -37,11 +37,10 @@ const createApplication = async (applicationData) => {
       apellidoMaterno,
       apellidoPaterno,
       clave,
-      claveMateria,
       cicloEscolar,
       universidad,
       carrera,
-      materia,
+      materiasInteres,
       archivo,
       userId,
       comentarios = ''
@@ -49,19 +48,18 @@ const createApplication = async (applicationData) => {
 
     const result = await query(
       `INSERT INTO applications 
-      (nombre, apellidoMaterno, apellidoPaterno, clave, claveMateria, cicloEscolar, universidad, carrera, materia, archivo, estado, userId, comentarios) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, carrera, materiasInteres, archivo, estado, userId, comentarios) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
       RETURNING *`,
       [
         nombre,
         apellidoMaterno,
         apellidoPaterno,
         clave,
-        claveMateria,
         cicloEscolar,
         universidad,
         carrera,
-        materia,
+        materiasInteres ? JSON.stringify(materiasInteres) : "[]",
         archivo ? JSON.stringify(archivo) : "{}",
         "pendiente",
         userId,
