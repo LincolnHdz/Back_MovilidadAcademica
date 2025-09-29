@@ -27,6 +27,8 @@ const createCarreraTable = async () => {
   }
 };
 
+
+
 module.exports = {
-  createCarreraTable,
+  createCarreraTable
 };
