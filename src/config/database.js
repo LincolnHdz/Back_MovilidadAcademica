@@ -28,7 +28,14 @@ const query = async (text, params) => {
     console.log("Consulta ejecutada:", { text, duration, rows: res.rowCount });
     return res;
   } catch (err) {
-    console.error("Error en consulta:", err);
+    console.error("Error en consulta:", {
+      text,
+      error: err.message,
+      code: err.code,
+      detail: err.detail,
+      position: err.position,
+      stack: err.stack
+    });
     throw err;
   }
 };

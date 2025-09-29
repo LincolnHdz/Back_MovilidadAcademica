@@ -22,6 +22,7 @@ app.use("/api/convocatorias", require("./routes/convocatoria.routes"));
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/applications", require("./routes/application.routes"));
 app.use("/api/filters", require("./routes/filters.routes"));
+app.use("/api/catalogo", require("./routes/catalogo.routes"));
 
 // Ruta de prueba
 app.get("/", (req, res) => {

@@ -17,14 +17,35 @@ const generateToken = (userId) => {
 
 // registro de usuario
 const register = async (req, res) => {
-  try {
-    const { nombres, apellido_paterno, apellido_materno, clave, email, password } = req.body;
 
-    //validaciones
-    if (!nombres || !apellido_paterno || !apellido_materno || !clave || !email || !password) {
+  try {
+    const {
+      nombres,
+      apellido_paterno,
+      apellido_materno,
+      clave,
+      email,
+      password,
+      tipo_movilidad,
+      universidad_id,
+      facultad_id,
+      carrera_id,
+      beca_id
+    } = req.body;
+
+    // Validar tipo_movilidad si se proporciona
+    if (tipo_movilidad && !['movilidad_internacional', 'movilidad_virtual', 'visitante_nacional', 'visitante_internacional'].includes(tipo_movilidad)) {
       return res.status(400).json({
         success: false,
-        message: "Todos los campos son obligatorios",
+        message: "Tipo de movilidad no válido",
+      });
+    }
+
+    //validaciones
+    if (!nombres || !apellido_paterno || !apellido_materno || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Todos los campos obligatorios excepto clave",
       });
     }
 
@@ -42,8 +63,8 @@ const register = async (req, res) => {
       });
     }
 
-    // Validar que la clave sea de 6 dígitos
-    if (clave.length !== 6 || !/^\d{6}$/.test(clave)) {
+    // Validar clave solo si se proporciona
+    if (clave && (clave.length !== 6 || !/^\d{6}$/.test(clave))) {
       return res.status(400).json({
         success: false,
         message: "La clave debe ser de 6 dígitos",
@@ -56,11 +77,16 @@ const register = async (req, res) => {
       nombres,
       apellido_paterno,
       apellido_materno,
-      clave,
+      clave: clave || null,
       telefono: null,
       email,
       password,
       rol,
+      tipo_movilidad: null,
+      universidad_id: universidad_id || null,
+      facultad_id: facultad_id || null,
+      carrera_id: carrera_id || null,
+      beca_id: beca_id || null,
     });
 
     // generar token
@@ -86,7 +112,7 @@ const register = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Error en el servidor",
+      message: "Error en el servidor: " + (error.message || "Error desconocido"),
     });
   }
 };
