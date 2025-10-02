@@ -1,4 +1,3 @@
-
 const express = require("express");
 const { query } = require("../config/database");
 const { authMiddleware, requireRole } = require("../middleware/authMiddleware");
@@ -13,7 +12,8 @@ const {
   updateUserCarrera,
   updateUserBeca,
   validatePassword,
-  updateUserTipoMovilidad
+  updateUserTipoMovilidad,
+  getUsersByFilters // <-- agregado
 } = require("../models/userModel");
 const router = express.Router();
 
@@ -319,6 +319,31 @@ router.patch(
         success: false, 
         message: "Error interno del servidor" 
       });
+    }
+  }
+);
+
+// Búsqueda por filtros (admin)
+router.get(
+  "/search",
+  authMiddleware,
+  requireRole(["administrador"]),
+  async (req, res) => {
+    try {
+      const { universidad_id, facultad_id, carrera_id, beca_id } = req.query;
+      const filters = {
+        universidad_id: universidad_id !== undefined ? (universidad_id === "" ? undefined : parseInt(universidad_id, 10)) : undefined,
+        facultad_id: facultad_id !== undefined ? (facultad_id === "" ? undefined : parseInt(facultad_id, 10)) : undefined,
+        carrera_id: carrera_id !== undefined ? (carrera_id === "" ? undefined : parseInt(carrera_id, 10)) : undefined,
+        beca_id: beca_id !== undefined ? (beca_id === "" ? undefined : parseInt(beca_id, 10)) : undefined,
+      };
+
+      const users = await getUsersByFilters(filters);
+      const sanitized = users.map(({ password, ...u }) => u);
+      res.status(200).json({ success: true, data: sanitized });
+    } catch (error) {
+      console.error("Error buscando usuarios por filtros:", error);
+      res.status(500).json({ success: false, message: "Error interno del servidor" });
     }
   }
 );

@@ -179,6 +179,39 @@ const updateUserTipoMovilidad = async (id, tipo_movilidad) => {
   }
 };
 
+const getUsersByFilters = async (filters = {}) => {
+  try {
+    const clauses = [];
+    const params = [];
+    let idx = 1;
+
+    if (filters.universidad_id !== undefined && filters.universidad_id !== null && filters.universidad_id !== "") {
+      clauses.push(`universidad_id = $${idx++}`);
+      params.push(filters.universidad_id);
+    }
+    if (filters.facultad_id !== undefined && filters.facultad_id !== null && filters.facultad_id !== "") {
+      clauses.push(`facultad_id = $${idx++}`);
+      params.push(filters.facultad_id);
+    }
+    if (filters.carrera_id !== undefined && filters.carrera_id !== null && filters.carrera_id !== "") {
+      clauses.push(`carrera_id = $${idx++}`);
+      params.push(filters.carrera_id);
+    }
+    if (filters.beca_id !== undefined && filters.beca_id !== null && filters.beca_id !== "") {
+      clauses.push(`beca_id = $${idx++}`);
+      params.push(filters.beca_id);
+    }
+
+    const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
+    const sql = `SELECT * FROM users ${where}`;
+    const result = await query(sql, params);
+    return result.rows;
+  } catch (error) {
+    console.error("Error al obtener usuarios por filtros:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createUserTable,
   createUser,
@@ -213,7 +246,6 @@ module.exports = {
   validatePassword,
   updateUserRole,
   updateUserTelefono,
-  
   /**
    * Actualiza la universidad asociada a un usuario.
    * @param {number} id - ID del usuario
@@ -289,4 +321,5 @@ module.exports = {
       throw error;
     }
   },
+  getUsersByFilters,
 };
