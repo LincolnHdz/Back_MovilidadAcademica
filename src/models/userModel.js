@@ -1,15 +1,3 @@
-const updateUserTelefono = async (id, telefono) => {
-  try {
-    const result = await query(
-      "UPDATE users SET telefono = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
-      [telefono, id]
-    );
-    return result.rows[0];
-  } catch (error) {
-    console.error("Error al actualizar el teléfono del usuario:", error);
-    throw error;
-  }
-};
 const { query } = require("../config/database");
 const bcrypt = require("bcryptjs");
 
@@ -26,6 +14,7 @@ const createUserTable = async () => {
         password VARCHAR(100) NOT NULL,
         rol VARCHAR(50) default 'alumno',
         tipo_movilidad VARCHAR(50) CHECK (tipo_movilidad IN ('movilidad_internacional', 'movilidad_virtual', 'visitante_nacional', 'visitante_internacional', NULL)),
+        ciclo_escolar VARCHAR(20),
         universidad_id INTEGER REFERENCES universidades(id) ON DELETE SET NULL,
         facultad_id INTEGER REFERENCES facultades(id) ON DELETE SET NULL,
         carrera_id INTEGER REFERENCES carreras(id) ON DELETE SET NULL,
@@ -55,6 +44,7 @@ const createUser = async (userData) => {
     password, 
     rol,
     tipo_movilidad,
+    ciclo_escolar,
     universidad_id,
     facultad_id,
     carrera_id,
@@ -77,8 +67,8 @@ const createUser = async (userData) => {
 
     // Crear el nuevo usuario
     const newUser = await query(
-      "INSERT INTO users (nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol, tipo_movilidad, universidad_id, facultad_id, carrera_id, beca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
-      [nombres, apellido_paterno, apellido_materno, clave, telefono, email, hashedPassword, rol, tipo_movilidad, universidad_id, facultad_id, carrera_id, beca_id]
+      "INSERT INTO users (nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol, tipo_movilidad, ciclo_escolar, universidad_id, facultad_id, carrera_id, beca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
+      [nombres, apellido_paterno, apellido_materno, clave, telefono, email, hashedPassword, rol, tipo_movilidad, ciclo_escolar, universidad_id, facultad_id, carrera_id, beca_id]
     );
 
     return newUser.rows[0];
@@ -245,7 +235,26 @@ module.exports = {
   updateUserTipoMovilidad,
   validatePassword,
   updateUserRole,
-  updateUserTelefono,
+  
+  /**
+   * Actualiza el teléfono de un usuario.
+   * @param {number} id - ID del usuario
+   * @param {string} telefono - Nuevo teléfono del usuario
+   * @returns {Promise<object>} Usuario actualizado
+   */
+  updateUserTelefono: async (id, telefono) => {
+    try {
+      const result = await query(
+        "UPDATE users SET telefono = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+        [telefono, id]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al actualizar el teléfono del usuario:", error);
+      throw error;
+    }
+  },
+  
   /**
    * Actualiza la universidad asociada a un usuario.
    * @param {number} id - ID del usuario
@@ -321,5 +330,62 @@ module.exports = {
       throw error;
     }
   },
+
+  /**
+   * Actualiza el ciclo escolar de un usuario.
+   * @param {number} id - ID del usuario
+   * @param {string} ciclo_escolar - Ciclo escolar (ej: "2024-2025")
+   * @returns {Promise<object>} Usuario actualizado
+   */
+  updateUserCicloEscolar: async (id, ciclo_escolar) => {
+    try {
+      const result = await query(
+        "UPDATE users SET ciclo_escolar = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+        [ciclo_escolar, id]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al actualizar el ciclo escolar del usuario:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza la clave de un usuario.
+   * @param {number} id - ID del usuario
+   * @param {string} clave - Nueva clave del estudiante
+   * @returns {Promise<object>} Usuario actualizado
+   */
+  updateUserClave: async (id, clave) => {
+    try {      
+      // Validar que la clave no esté ya en uso si no está vacía
+      if (clave && clave.trim() !== '') {
+        const existingUser = await query(
+          "SELECT id FROM users WHERE clave = $1 AND id != $2",
+          [clave, id]
+        );
+        
+        if (existingUser.rows.length > 0) {
+          throw new Error("La clave ya está en uso por otro usuario");
+        }
+      }
+
+      const result = await query(
+        "UPDATE users SET clave = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+        [clave || null, id]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error al actualizar la clave del usuario:", error);
+      
+      // Manejar errores específicos de PostgreSQL
+      if (error.code === '23505') { // Unique constraint violation
+        throw new Error("La clave ya está en uso por otro usuario");
+      }
+      
+      throw error;
+    }
+  },
+
   getUsersByFilters,
 };
