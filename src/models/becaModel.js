@@ -7,7 +7,8 @@ const createBecaTable = async () => {
       nombre VARCHAR(255) NOT NULL,
       pais VARCHAR(100) NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT becas_nombre_pais_unique UNIQUE (nombre, pais)
     );
   `;
 
@@ -29,6 +30,11 @@ const createBeca = async (becaData) => {
     );
     return result.rows[0];
   } catch (error) {
+    if (error.code === '23505') { // Unique constraint violation
+      if (error.constraint === 'becas_nombre_pais_unique') {
+        throw new Error('Ya existe una beca con este nombre en el mismo país');
+      }
+    }
     throw error;
   }
 };
@@ -60,6 +66,11 @@ const updateBeca = async (id, becaData) => {
     );
     return result.rows[0];
   } catch (error) {
+    if (error.code === '23505') { // Unique constraint violation
+      if (error.constraint === 'becas_nombre_pais_unique') {
+        throw new Error('Ya existe una beca con este nombre en el mismo país');
+      }
+    }
     throw error;
   }
 };
