@@ -3,68 +3,57 @@ const { query } = require("../config/database");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const router = express.Router();
 
-// Universidades
-router.get("/universidades", async (req, res) => {
+// helper para safeQuery y log detallado
+const safeQuery = async (sql, params = []) => {
   try {
-    const universidades = await getUniversidades();
-    res.json(universidades);
+    const res = await query(sql, params);
+    return { ok: true, rows: res.rows };
   } catch (err) {
-    res.status(500).json({ error: "Error al obtener universidades" });
+    console.error("SQL Error:", { sql, params, message: err.message, stack: err.stack });
+    return { ok: false, error: err };
   }
+};
+
+// Universidades
+router.get("/universidades", authMiddleware, async (req, res) => {
+  const { ok, rows, error } = await safeQuery("SELECT id, nombre FROM universidades ORDER BY nombre");
+  if (!ok) return res.status(500).json({ success: false, message: "Error al obtener universidades", error: error.message });
+  res.json({ success: true, data: rows });
 });
 
 // Facultades
-router.get("/facultades", async (req, res) => {
-  try {
-    const facultades = await getFacultades();
-    res.json(facultades);
-  } catch (err) {
-    res.status(500).json({ error: "Error al obtener facultades" });
-  }
+router.get("/facultades", authMiddleware, async (req, res) => {
+  const { ok, rows, error } = await safeQuery("SELECT id, nombre FROM facultades ORDER BY nombre");
+  if (!ok) return res.status(500).json({ success: false, message: "Error al obtener facultades", error: error.message });
+  res.json({ success: true, data: rows });
 });
 
 // Carreras
-router.get("/carreras", async (req, res) => {
-  try {
-    const carreras = await getCarreras();
-    res.json(carreras);
-  } catch (err) {
-    res.status(500).json({ error: "Error al obtener carreras" });
-  }
+router.get("/carreras", authMiddleware, async (req, res) => {
+  const { ok, rows, error } = await safeQuery("SELECT id, nombre FROM carreras ORDER BY nombre");
+  if (!ok) return res.status(500).json({ success: false, message: "Error al obtener carreras", error: error.message });
+  res.json({ success: true, data: rows });
 });
 
 // Becas
-router.get("/becas", async (req, res) => {
-  try {
-    const becas = await getBecas();
-    res.json(becas);
-  } catch (err) {
-    res.status(500).json({ error: "Error al obtener becas" });
-  }
+router.get("/becas", authMiddleware, async (req, res) => {
+  const { ok, rows, error } = await safeQuery("SELECT id, nombre FROM becas ORDER BY nombre");
+  if (!ok) return res.status(500).json({ success: false, message: "Error al obtener becas", error: error.message });
+  res.json({ success: true, data: rows });
 });
 
 // Obtener tipos de movilidad únicos desde users
 router.get("/tipo-movilidad", authMiddleware, async (req, res) => {
-  try {
-    const result = await query("SELECT DISTINCT tipo_movilidad FROM users WHERE tipo_movilidad IS NOT NULL ORDER BY tipo_movilidad");
-    const options = result.rows.map(r => r.tipo_movilidad).filter(Boolean);
-    res.json({ success: true, data: options });
-  } catch (error) {
-    console.error("Error al obtener tipos de movilidad:", error);
-    res.status(500).json({ success: false, message: "Error interno" });
-  }
+  const { ok, rows, error } = await safeQuery("SELECT DISTINCT tipo_movilidad FROM users WHERE tipo_movilidad IS NOT NULL ORDER BY tipo_movilidad");
+  if (!ok) return res.status(500).json({ success: false, message: "Error al obtener tipos de movilidad", error: error.message });
+  res.json({ success: true, data: rows.map(r => r.tipo_movilidad).filter(Boolean) });
 });
 
 // Obtener ciclos escolares únicos desde users
 router.get("/ciclos", authMiddleware, async (req, res) => {
-  try {
-    const result = await query("SELECT DISTINCT ciclo_escolar FROM users WHERE ciclo_escolar IS NOT NULL ORDER BY ciclo_escolar");
-    const options = result.rows.map(r => r.ciclo_escolar).filter(Boolean);
-    res.json({ success: true, data: options });
-  } catch (error) {
-    console.error("Error al obtener ciclos escolares:", error);
-    res.status(500).json({ success: false, message: "Error interno" });
-  }
+  const { ok, rows, error } = await safeQuery("SELECT DISTINCT ciclo_escolar FROM users WHERE ciclo_escolar IS NOT NULL ORDER BY ciclo_escolar");
+  if (!ok) return res.status(500).json({ success: false, message: "Error al obtener ciclos", error: error.message });
+  res.json({ success: true, data: rows.map(r => r.ciclo_escolar).filter(Boolean) });
 });
 
 module.exports = router;
