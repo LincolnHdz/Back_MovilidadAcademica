@@ -11,8 +11,10 @@ const {
   updateUserFacultad,
   updateUserCarrera,
   updateUserBeca,
+  updateUserClave,
   validatePassword,
   updateUserTipoMovilidad,
+  updateUserCicloEscolar,
   getUsersByFilters // <-- agregado
 } = require("../models/userModel");
 const router = express.Router();
@@ -52,13 +54,51 @@ router.patch(
   }
 );
 
+// Ruta para actualizar el ciclo escolar del usuario
+router.patch(
+  "/:id/ciclo-escolar",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { ciclo_escolar } = req.body;
+      
+      // Permitir solo si es el propio usuario o admin
+      if (req.user.id.toString() !== id && req.user.rol !== "administrador") {
+        return res.status(403).json({ success: false, message: "No tienes permiso para actualizar este perfil" });
+      }
+      
+      // Validar formato del ciclo escolar (opcional, puedes ajustar según tus necesidades)
+      if (ciclo_escolar && typeof ciclo_escolar !== "string") {
+        return res.status(400).json({ success: false, message: "Ciclo escolar debe ser una cadena de texto" });
+      }
+      
+      // Actualizar ciclo escolar
+      const updated = await updateUserCicloEscolar(id, ciclo_escolar);
+      if (!updated) {
+        return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+      }
+      
+      const { password, ...user } = updated;
+      res.status(200).json({ success: true, data: user, message: "Ciclo escolar actualizado correctamente" });
+    } catch (error) {
+      console.error("Error actualizando ciclo escolar:", error);
+      res.status(500).json({ success: false, message: "Error interno del servidor" });
+    }
+  }
+);
+
 router.patch(
   "/:id",
   authMiddleware,
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { telefono, universidad_id, facultad_id, carrera_id, beca_id } = req.body;
+      const { telefono, universidad_id, facultad_id, carrera_id, beca_id, ciclo_escolar, clave } = req.body;
+      
+      // Debug: Ver qué está llegando
+      console.log("PATCH /users/:id - Body recibido:", req.body);
+      console.log("Campo clave:", clave, "Tipo:", typeof clave);
       
       // Permitir solo si es el propio usuario o admin
       if (req.user.id.toString() !== id && req.user.rol !== "administrador") {
@@ -80,6 +120,43 @@ router.patch(
         updated = await updateUserCarrera(id, carrera_id);
       } else if (beca_id !== undefined) {
         updated = await updateUserBeca(id, beca_id);
+      } else if (ciclo_escolar !== undefined) {
+        updated = await updateUserCicloEscolar(id, ciclo_escolar);
+      } else if (clave !== undefined) {
+        console.log("Procesando actualización de clave...");
+        
+        // Validar clave si se proporciona y no está vacía
+        if (clave && clave.trim() !== '') {
+          console.log("Validando clave no vacía...");
+          if (typeof clave !== "string" || clave.length > 10) {
+            console.log("Error de validación: clave inválida");
+            return res.status(400).json({ 
+              success: false, 
+              message: "La clave debe ser una cadena de máximo 10 caracteres" 
+            });
+          }
+        }
+        
+        console.log("Llamando a updateUserClave...");
+        try {
+          updated = await updateUserClave(id, clave);
+          console.log("updateUserClave exitoso:", updated);
+        } catch (claveError) {
+          console.error("Error en updateUserClave:", claveError);
+          
+          // Verificar si es un error de clave duplicada
+          if (claveError.message.includes("ya está en uso")) {
+            return res.status(409).json({ 
+              success: false, 
+              message: "La clave ya está registrada por otro usuario" 
+            });
+          }
+          
+          return res.status(400).json({ 
+            success: false, 
+            message: claveError.message || "Error al actualizar la clave" 
+          });
+        }
       } else {
         return res.status(400).json({ success: false, message: "No se proporcionó ningún campo para actualizar" });
       }

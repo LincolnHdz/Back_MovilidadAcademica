@@ -25,12 +25,6 @@ const createCarreraTable = async () => {
   }
 };
 
-
-
-module.exports = {
-  createCarreraTable
-}
-
 const createCarrera = async (carreraData) => {
   const { nombre, facultad_id } = carreraData;
   try {

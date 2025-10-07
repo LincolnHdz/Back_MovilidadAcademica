@@ -45,8 +45,11 @@ const getAllMaterias = async () => {
     const result = await query(`
       SELECT m.*, 
              c.nombre as carrera_nombre,
+             c.id as carrera_id,
              f.nombre as facultad_nombre,
-             u.nombre as universidad_nombre
+             f.id as facultad_id,
+             u.nombre as universidad_nombre,
+             u.id as universidad_id
       FROM materias m 
       INNER JOIN carreras c ON m.carrera_id = c.id
       INNER JOIN facultades f ON c.facultad_id = f.id
@@ -64,8 +67,11 @@ const getMateriaById = async (id) => {
     const result = await query(`
       SELECT m.*, 
              c.nombre as carrera_nombre,
+             c.id as carrera_id,
              f.nombre as facultad_nombre,
-             u.nombre as universidad_nombre
+             f.id as facultad_id,
+             u.nombre as universidad_nombre,
+             u.id as universidad_id
       FROM materias m 
       INNER JOIN carreras c ON m.carrera_id = c.id
       INNER JOIN facultades f ON c.facultad_id = f.id
