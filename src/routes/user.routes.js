@@ -330,12 +330,22 @@ router.get(
   requireRole(["administrador"]),
   async (req, res) => {
     try {
-      const { universidad_id, facultad_id, carrera_id, beca_id } = req.query;
+      const {
+        universidad_id,
+        facultad_id,
+        carrera_id,
+        beca_id,
+        tipo_movilidad,
+        ciclo_escolar
+      } = req.query;
+
       const filters = {
         universidad_id: universidad_id !== undefined ? (universidad_id === "" ? undefined : parseInt(universidad_id, 10)) : undefined,
         facultad_id: facultad_id !== undefined ? (facultad_id === "" ? undefined : parseInt(facultad_id, 10)) : undefined,
         carrera_id: carrera_id !== undefined ? (carrera_id === "" ? undefined : parseInt(carrera_id, 10)) : undefined,
         beca_id: beca_id !== undefined ? (beca_id === "" ? undefined : parseInt(beca_id, 10)) : undefined,
+        tipo_movilidad: tipo_movilidad !== undefined ? (tipo_movilidad === "" ? undefined : tipo_movilidad) : undefined,
+        ciclo_escolar: ciclo_escolar !== undefined ? (ciclo_escolar === "" ? undefined : ciclo_escolar) : undefined,
       };
 
       const users = await getUsersByFilters(filters);

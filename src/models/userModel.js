@@ -202,8 +202,18 @@ const getUsersByFilters = async (filters = {}) => {
       params.push(filters.beca_id);
     }
 
+    // nuevos filtros textuales
+    if (filters.tipo_movilidad !== undefined && filters.tipo_movilidad !== null && filters.tipo_movilidad !== "") {
+      clauses.push(`tipo_movilidad = $${idx++}`);
+      params.push(filters.tipo_movilidad);
+    }
+    if (filters.ciclo_escolar !== undefined && filters.ciclo_escolar !== null && filters.ciclo_escolar !== "") {
+      clauses.push(`ciclo_escolar = $${idx++}`);
+      params.push(filters.ciclo_escolar);
+    }
+
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
-    const sql = `SELECT * FROM users ${where}`;
+    const sql = `SELECT * FROM users ${where} ORDER BY id`;
     const result = await query(sql, params);
     return result.rows;
   } catch (error) {

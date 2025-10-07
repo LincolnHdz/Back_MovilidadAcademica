@@ -108,9 +108,16 @@ const getAllApplications = async (req, res) => {
     // JOIN para traer datos relevantes del usuario junto con la solicitud
     const result = await query(`
       SELECT a.*, 
-        u.nombres, u.apellido_paterno, u.apellido_materno, u.email, u.telefono, u.clave as user_clave, u.rol
+        u.nombres, 
+        u.apellido_paterno, 
+        u.apellido_materno, 
+        u.email, 
+        u.telefono, 
+        u.clave as user_clave, 
+        u.rol,
+        u.ciclo_escolar AS user_ciclo_escolar
       FROM applications a
-      LEFT JOIN users u ON a.userid = u.id
+      LEFT JOIN users u ON a.userId = u.id
       ORDER BY a.created_at DESC
     `);
     res.json({ 
@@ -130,7 +137,20 @@ const getAllApplications = async (req, res) => {
 const getApplicationById = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await query("SELECT * FROM applications WHERE id = $1", [id]);
+    // traer también datos del usuario relacionado (incluye ciclo_escolar)
+    const result = await query(`
+      SELECT a.*,
+             u.nombres, 
+             u.apellido_paterno, 
+             u.apellido_materno,
+             u.email,
+             u.telefono,
+             u.clave as user_clave,
+             u.ciclo_escolar AS user_ciclo_escolar
+      FROM applications a
+      LEFT JOIN users u ON a.userId = u.id
+      WHERE a.id = $1
+    `, [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ 
@@ -205,7 +225,8 @@ const updateApplicationStatus = async (req, res) => {
              u.apellido_paterno, 
              u.apellido_materno,
              u.email,
-             u.clave as user_clave
+             u.clave as user_clave,
+             u.ciclo_escolar AS user_ciclo_escolar
       FROM applications a
       LEFT JOIN users u ON a.userId = u.id
       WHERE a.id = $1

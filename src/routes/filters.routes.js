@@ -1,11 +1,7 @@
 const express = require("express");
+const { query } = require("../config/database");
+const { authMiddleware } = require("../middleware/authMiddleware");
 const router = express.Router();
-const {
-  getUniversidades,
-  getFacultades,
-  getCarreras,
-  getBecas
-} = require("../models/filtersModel");
 
 // Universidades
 router.get("/universidades", async (req, res) => {
@@ -44,6 +40,30 @@ router.get("/becas", async (req, res) => {
     res.json(becas);
   } catch (err) {
     res.status(500).json({ error: "Error al obtener becas" });
+  }
+});
+
+// Obtener tipos de movilidad únicos desde users
+router.get("/tipo-movilidad", authMiddleware, async (req, res) => {
+  try {
+    const result = await query("SELECT DISTINCT tipo_movilidad FROM users WHERE tipo_movilidad IS NOT NULL ORDER BY tipo_movilidad");
+    const options = result.rows.map(r => r.tipo_movilidad).filter(Boolean);
+    res.json({ success: true, data: options });
+  } catch (error) {
+    console.error("Error al obtener tipos de movilidad:", error);
+    res.status(500).json({ success: false, message: "Error interno" });
+  }
+});
+
+// Obtener ciclos escolares únicos desde users
+router.get("/ciclos", authMiddleware, async (req, res) => {
+  try {
+    const result = await query("SELECT DISTINCT ciclo_escolar FROM users WHERE ciclo_escolar IS NOT NULL ORDER BY ciclo_escolar");
+    const options = result.rows.map(r => r.ciclo_escolar).filter(Boolean);
+    res.json({ success: true, data: options });
+  } catch (error) {
+    console.error("Error al obtener ciclos escolares:", error);
+    res.status(500).json({ success: false, message: "Error interno" });
   }
 });
 
