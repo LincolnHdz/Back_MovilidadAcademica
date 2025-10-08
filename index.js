@@ -16,6 +16,11 @@ const convocatoriaRoutes = require("./src/routes/convocatoria.routes");
 const authRoutes = require("./src/routes/auth.routes");
 const applicationRoutes = require("./src/routes/application.routes");
 const catalogoRoutes = require("./src/routes/catalogo.routes");
+const statsRoutes = require("./src/routes/stats.routes");
+const {
+  router: visitorLogRoutes,
+  trackVisit,
+} = require("./src/routes/visitorLog.routes");
 
 // Importar todas las funciones de creación de tablas
 const { createTable } = require("./src/models/convocatoriaModel");
@@ -26,30 +31,33 @@ const { createCarreraTable } = require("./src/models/carreraModel");
 const { createMateriaTable } = require("./src/models/materiaModel");
 const { createBecaTable } = require("./src/models/becaModel");
 const { createApplicationTable } = require("./src/models/applicationModel");
+const { createVisitorLogTable } = require("./src/models/visitorLogModel");
 
 app.use("/api/users", userRoutes);
 app.use("/api/convocatorias", convocatoriaRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/catalogo", catalogoRoutes);
+app.use("/api/stats", statsRoutes);
+app.use("/api/visitor-logs", visitorLogRoutes);
 
 // Ruta para descargar archivos directamente
-const fs = require('fs');
-app.get('/download/:filename', (req, res) => {
+const fs = require("fs");
+app.get("/download/:filename", (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(__dirname, 'uploads', filename);
-  
+  const filePath = path.join(__dirname, "uploads", filename);
+
   // Verificar si el archivo existe
   if (fs.existsSync(filePath)) {
     // Configurar headers para forzar la descarga
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.setHeader('Content-Type', 'application/octet-stream');
-    
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+    res.setHeader("Content-Type", "application/octet-stream");
+
     // Enviar el archivo
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
   } else {
-    res.status(404).send('Archivo no encontrado');
+    res.status(404).send("Archivo no encontrado");
   }
 });
 
