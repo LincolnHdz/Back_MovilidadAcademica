@@ -12,6 +12,7 @@ const { createMateriaTable } = require("./models/materiaModel");
 const { createApplicationTable } = require("./models/applicationModel");
 const { createBecaTable } = require("./models/becaModel");
 const { createFacultadTable } = require("./models/facultadModel");
+const { createVisitantesInfoTable } = require("./models/visitantesInfoModel");
 
 const PORT = process.env.PORT || 3000;
 
@@ -31,6 +32,7 @@ const startServer = async () => {
     await createBecaTable(); // Becas
     await createUserTable(); // Users depende de varias tablas anteriores
     await createApplicationTable(); // Applications depende de users
+    await createVisitantesInfoTable(); // Información adicional de visitantes
     */
 
     app.listen(PORT, () => {

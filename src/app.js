@@ -24,6 +24,7 @@ app.use("/api/applications", require("./routes/application.routes"));
 app.use("/api/filters", require("./routes/filters.routes")); // <-- agregar esta línea
 app.use("/api/catalogo", require("./routes/catalogo.routes"));
 app.use("/api/stats", require("./routes/stats.routes"));
+app.use("/api/visitantes-info", require("./routes/visitantesInfo.routes"));
 
 // Ruta de prueba
 app.get("/", (req, res) => {

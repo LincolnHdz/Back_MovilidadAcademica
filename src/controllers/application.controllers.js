@@ -12,6 +12,7 @@ const addApplication = async (req, res) => {
       clave,
       cicloEscolar,
       universidad,
+      paisDestino,
       carrera,
       materiasInteres,
       comentarios = ''
@@ -50,6 +51,7 @@ const addApplication = async (req, res) => {
         clave VARCHAR(50),
         cicloEscolar VARCHAR(50),
         universidad VARCHAR(100),
+        paisdestino VARCHAR(100),
         carrera VARCHAR(100),
         materiasInteres JSONB DEFAULT '[]', 
         archivo JSONB,
@@ -69,8 +71,8 @@ const addApplication = async (req, res) => {
     // Insertar datos
     const insertData = `
       INSERT INTO applications 
-      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, carrera, materiasInteres, archivo, userId, comentarios) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, paisdestino, carrera, materiasInteres, archivo, userId, comentarios) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING *
     `;
 
@@ -81,6 +83,7 @@ const addApplication = async (req, res) => {
       userClave, // Mantenemos la clave solo como campo informativo
       cicloEscolar,
       universidad,
+      paisDestino,
       carrera,
       JSON.stringify(parsedMateriasInteres),
       JSON.stringify(archivoInfo),

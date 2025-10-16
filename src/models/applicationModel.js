@@ -11,6 +11,7 @@ const createApplicationTable = async () => {
         clave VARCHAR(50),
         cicloEscolar VARCHAR(50),
         universidad VARCHAR(100),
+        paisdestino VARCHAR(100),
         carrera VARCHAR(100),
         materiasInteres JSONB DEFAULT '[]',
         archivo JSONB,
@@ -39,6 +40,7 @@ const createApplication = async (applicationData) => {
       clave,
       cicloEscolar,
       universidad,
+      paisDestino,
       carrera,
       materiasInteres,
       archivo,
@@ -48,8 +50,8 @@ const createApplication = async (applicationData) => {
 
     const result = await query(
       `INSERT INTO applications 
-      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, carrera, materiasInteres, archivo, estado, userId, comentarios) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, paisdestino, carrera, materiasInteres, archivo, estado, userId, comentarios) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
       RETURNING *`,
       [
         nombre,
@@ -58,6 +60,7 @@ const createApplication = async (applicationData) => {
         clave,
         cicloEscolar,
         universidad,
+        paisDestino,
         carrera,
         materiasInteres ? JSON.stringify(materiasInteres) : "[]",
         archivo ? JSON.stringify(archivo) : "{}",

@@ -17,6 +17,7 @@ const authRoutes = require("./src/routes/auth.routes");
 const applicationRoutes = require("./src/routes/application.routes");
 const catalogoRoutes = require("./src/routes/catalogo.routes");
 const statsRoutes = require("./src/routes/stats.routes");
+const visitantesInfoRoutes = require("./src/routes/visitantesInfo.routes");
 const {
   router: visitorLogRoutes,
   trackVisit,
@@ -32,6 +33,7 @@ const { createMateriaTable } = require("./src/models/materiaModel");
 const { createBecaTable } = require("./src/models/becaModel");
 const { createApplicationTable } = require("./src/models/applicationModel");
 const { createVisitorLogTable } = require("./src/models/visitorLogModel");
+const { createVisitantesInfoTable } = require("./src/models/visitantesInfoModel");
 
 app.use("/api/users", userRoutes);
 app.use("/api/convocatorias", convocatoriaRoutes);
@@ -39,6 +41,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/catalogo", catalogoRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/visitantes-info", visitantesInfoRoutes);
 app.use("/api/visitor-logs", visitorLogRoutes);
 
 // Ruta para descargar archivos directamente
@@ -83,5 +86,7 @@ app.listen(PORT, async () => {
   await createMateriaTable(); // Materias depende de carreras
   await createUserTable(); // Users depende de todas las anteriores
   await createApplicationTable(); // Applications depende de users
+  await createVisitorLogTable(); // Visitor logs
+  await createVisitantesInfoTable(); // Información adicional de visitantes
   */
 });
