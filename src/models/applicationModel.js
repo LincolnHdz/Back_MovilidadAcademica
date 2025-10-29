@@ -9,7 +9,8 @@ const createApplicationTable = async () => {
         apellidoMaterno VARCHAR(100),
         apellidoPaterno VARCHAR(100),
         clave VARCHAR(50),
-        cicloEscolar VARCHAR(50),
+        cicloEscolarInicio VARCHAR(50),
+        cicloEscolarFinal VARCHAR(50),
         universidad VARCHAR(100),
         paisdestino VARCHAR(100),
         carrera VARCHAR(100),
@@ -38,7 +39,8 @@ const createApplication = async (applicationData) => {
       apellidoMaterno,
       apellidoPaterno,
       clave,
-      cicloEscolar,
+      cicloEscolarInicio,
+      cicloEscolarFinal,
       universidad,
       paisDestino,
       carrera,
@@ -50,15 +52,16 @@ const createApplication = async (applicationData) => {
 
     const result = await query(
       `INSERT INTO applications 
-      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, paisdestino, carrera, materiasInteres, archivo, estado, userId, comentarios) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolarInicio, cicloEscolarFinal, universidad, paisdestino, carrera, materiasInteres, archivo, estado, userId, comentarios) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
       RETURNING *`,
       [
         nombre,
         apellidoMaterno,
         apellidoPaterno,
         clave,
-        cicloEscolar,
+        cicloEscolarInicio,
+        cicloEscolarFinal,
         universidad,
         paisDestino,
         carrera,

@@ -10,7 +10,8 @@ const addApplication = async (req, res) => {
       apellidoMaterno,
       apellidoPaterno,
       clave,
-      cicloEscolar,
+      cicloEscolarInicio,
+      cicloEscolarFinal,
       universidad,
       paisDestino,
       carrera,
@@ -46,18 +47,19 @@ const addApplication = async (req, res) => {
       CREATE TABLE IF NOT EXISTS applications (
         id SERIAL PRIMARY KEY,
         nombre VARCHAR(100),
-        apellidoMaterno VARCHAR(100),
-        apellidoPaterno VARCHAR(100),
+        apellidomaterno VARCHAR(100),
+        apellidopaterno VARCHAR(100),
         clave VARCHAR(50),
-        cicloEscolar VARCHAR(50),
+        cicloescolarinicio VARCHAR(50),
+        cicloescolarfinal VARCHAR(50),
         universidad VARCHAR(100),
         paisdestino VARCHAR(100),
         carrera VARCHAR(100),
-        materiasInteres JSONB DEFAULT '[]', 
+        materiasinteres JSONB DEFAULT '[]', 
         archivo JSONB,
         estado VARCHAR(50) DEFAULT 'pendiente',
         comentarios TEXT,
-        userId INTEGER REFERENCES users(id),
+        userid INTEGER REFERENCES users(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -71,8 +73,8 @@ const addApplication = async (req, res) => {
     // Insertar datos
     const insertData = `
       INSERT INTO applications 
-      (nombre, apellidoMaterno, apellidoPaterno, clave, cicloEscolar, universidad, paisdestino, carrera, materiasInteres, archivo, userId, comentarios) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      (nombre, apellidomaterno, apellidopaterno, clave, cicloescolarinicio, cicloescolarfinal, universidad, paisdestino, carrera, materiasinteres, archivo, userid, comentarios) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
       RETURNING *
     `;
 
@@ -81,7 +83,8 @@ const addApplication = async (req, res) => {
       apellidoMaterno,
       apellidoPaterno,
       userClave, // Mantenemos la clave solo como campo informativo
-      cicloEscolar,
+      cicloEscolarInicio,
+      cicloEscolarFinal,
       universidad,
       paisDestino,
       carrera,
@@ -118,9 +121,10 @@ const getAllApplications = async (req, res) => {
         u.telefono, 
         u.clave as user_clave, 
         u.rol,
-        u.ciclo_escolar AS user_ciclo_escolar
+        u.ciclo_escolar_inicio AS user_ciclo_escolar_inicio,
+        u.ciclo_escolar_final AS user_ciclo_escolar_final
       FROM applications a
-      LEFT JOIN users u ON a.userId = u.id
+      LEFT JOIN users u ON a.userid = u.id
       ORDER BY a.created_at DESC
     `);
     res.json({ 
@@ -149,7 +153,8 @@ const getApplicationById = async (req, res) => {
              u.email,
              u.telefono,
              u.clave as user_clave,
-             u.ciclo_escolar AS user_ciclo_escolar
+             u.ciclo_escolar_inicio AS user_ciclo_escolar_inicio,
+             u.ciclo_escolar_final AS user_ciclo_escolar_final
       FROM applications a
       LEFT JOIN users u ON a.userId = u.id
       WHERE a.id = $1
@@ -189,7 +194,7 @@ const getApplicationsByUserId = async (req, res) => {
     }
     
     const result = await query(
-      "SELECT * FROM applications WHERE userId = $1 ORDER BY created_at DESC", 
+      "SELECT * FROM applications WHERE userid = $1 ORDER BY created_at DESC", 
       [userId]
     );
     
@@ -216,7 +221,7 @@ const updateApplicationStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Estado no válido.' });
     }
     // Actualizar la solicitud
-    await query(
+    const updateResult = await query(
       `UPDATE applications SET estado = $1, comentarios = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3`,
       [estado, comentarios, id]
     );
@@ -229,9 +234,10 @@ const updateApplicationStatus = async (req, res) => {
              u.apellido_materno,
              u.email,
              u.clave as user_clave,
-             u.ciclo_escolar AS user_ciclo_escolar
+             u.ciclo_escolar_inicio AS user_ciclo_escolar_inicio,
+             u.ciclo_escolar_final AS user_ciclo_escolar_final
       FROM applications a
-      LEFT JOIN users u ON a.userId = u.id
+      LEFT JOIN users u ON a.userid = u.id
       WHERE a.id = $1
     `, [id]);
     

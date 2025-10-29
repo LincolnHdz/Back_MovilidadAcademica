@@ -14,7 +14,8 @@ const createUserTable = async () => {
         password VARCHAR(100) NOT NULL,
         rol VARCHAR(50) default 'alumno',
         tipo_movilidad VARCHAR(50) CHECK (tipo_movilidad IN ('movilidad_internacional', 'movilidad_virtual', 'visitante_nacional', 'visitante_internacional', NULL)),
-        ciclo_escolar VARCHAR(20),
+        ciclo_escolar_inicio VARCHAR(20),
+        ciclo_escolar_final VARCHAR(20),
         universidad_id INTEGER REFERENCES universidades(id) ON DELETE SET NULL,
         facultad_id INTEGER REFERENCES facultades(id) ON DELETE SET NULL,
         carrera_id INTEGER REFERENCES carreras(id) ON DELETE SET NULL,
@@ -44,7 +45,8 @@ const createUser = async (userData) => {
     password, 
     rol,
     tipo_movilidad,
-    ciclo_escolar,
+    ciclo_escolar_inicio,
+    ciclo_escolar_final,
     universidad_id,
     facultad_id,
     carrera_id,
@@ -67,8 +69,8 @@ const createUser = async (userData) => {
 
     // Crear el nuevo usuario
     const newUser = await query(
-      "INSERT INTO users (nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol, tipo_movilidad, ciclo_escolar, universidad_id, facultad_id, carrera_id, beca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
-      [nombres, apellido_paterno, apellido_materno, clave, telefono, email, hashedPassword, rol, tipo_movilidad, ciclo_escolar, universidad_id, facultad_id, carrera_id, beca_id]
+      "INSERT INTO users (nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol, tipo_movilidad, ciclo_escolar_inicio, ciclo_escolar_final, universidad_id, facultad_id, carrera_id, beca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *",
+      [nombres, apellido_paterno, apellido_materno, clave, telefono, email, hashedPassword, rol, tipo_movilidad, ciclo_escolar_inicio, ciclo_escolar_final, universidad_id, facultad_id, carrera_id, beca_id]
     );
 
     return newUser.rows[0];
@@ -197,9 +199,17 @@ const getUsersByFilters = async (filters = {}) => {
       clauses.push(`tipo_movilidad = $${idx++}`);
       params.push(filters.tipo_movilidad);
     }
-    if (filters.ciclo_escolar !== undefined && filters.ciclo_escolar !== null && filters.ciclo_escolar !== "") {
-      clauses.push(`ciclo_escolar = $${idx++}`);
-      params.push(filters.ciclo_escolar);
+    
+    // Filtros para ciclo escolar - permitir filtros por rango
+    if (filters.ciclo_escolar_inicio !== undefined && filters.ciclo_escolar_inicio !== null && filters.ciclo_escolar_inicio !== "") {
+      // Buscar usuarios cuyo ciclo final sea mayor o igual al inicio especificado
+      clauses.push(`(cicloescolarfinal >= $${idx++} OR cicloescolarfinal IS NULL)`);
+      params.push(filters.ciclo_escolar_inicio);
+    }
+    if (filters.ciclo_escolar_final !== undefined && filters.ciclo_escolar_final !== null && filters.ciclo_escolar_final !== "") {
+      // Buscar usuarios cuyo ciclo inicio sea menor o igual al final especificado
+      clauses.push(`(cicloescolarinicio <= $${idx++} OR cicloescolarinicio IS NULL)`);
+      params.push(filters.ciclo_escolar_final);
     }
 
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
@@ -344,14 +354,15 @@ module.exports = {
   /**
    * Actualiza el ciclo escolar de un usuario.
    * @param {number} id - ID del usuario
-   * @param {string} ciclo_escolar - Ciclo escolar (ej: "2024-2025")
+   * @param {string} ciclo_escolar_inicio - Ciclo escolar inicio (ej: "2024")
+   * @param {string} ciclo_escolar_final - Ciclo escolar final (ej: "2025")
    * @returns {Promise<object>} Usuario actualizado
    */
-  updateUserCicloEscolar: async (id, ciclo_escolar) => {
+  updateUserCicloEscolar: async (id, ciclo_escolar_inicio, ciclo_escolar_final) => {
     try {
       const result = await query(
-        "UPDATE users SET ciclo_escolar = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
-        [ciclo_escolar, id]
+        "UPDATE users SET ciclo_escolar_inicio = $1, ciclo_escolar_final = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *",
+        [ciclo_escolar_inicio, ciclo_escolar_final, id]
       );
       return result.rows[0];
     } catch (error) {
