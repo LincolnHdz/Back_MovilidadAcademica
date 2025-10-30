@@ -7,6 +7,7 @@ const {
   updateUserField,
 } = require("../models/userModel");
 const bcrypt = require("bcryptjs");
+const { query } = require("../config/database");
 
 const getAllUsersController = async (req, res) => {
   try {
@@ -82,10 +83,61 @@ const updateField = async (req, res) => {
   }
 };
 
+const getUserByIdController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 🔹 Trae al usuario base
+    const user = await findUserById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    // 🔹 Trae datos relacionados (universidad, facultad, carrera, beca)
+    const [universidad, facultad, carrera, beca] = await Promise.all([
+      user.universidad_id
+        ? query("SELECT id, nombre, pais FROM universidades WHERE id = $1", [user.universidad_id])
+        : { rows: [] },
+      user.facultad_id
+        ? query("SELECT id, nombre FROM facultades WHERE id = $1", [user.facultad_id])
+        : { rows: [] },
+      user.carrera_id
+        ? query("SELECT id, nombre FROM carreras WHERE id = $1", [user.carrera_id])
+        : { rows: [] },
+      user.beca_id
+        ? query("SELECT id, nombre, pais FROM becas WHERE id = $1", [user.beca_id])
+        : { rows: [] },
+    ]);
+
+    // 🔹 Combina la información enriquecida
+    const userDetail = {
+      ...user,
+      universidad: universidad.rows[0] || null,
+      facultad: facultad.rows[0] || null,
+      carrera: carrera.rows[0] || null,
+      beca: beca.rows[0] || null,
+    };
+
+    delete userDetail.password; // seguridad
+
+    return res.status(200).json({
+      success: true,
+      data: userDetail,
+    });
+  } catch (err) {
+    console.error("Error al obtener detalles del usuario:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener detalles del usuario",
+    });
+  }
+};
+
 module.exports = {
   getAllUsersController,
   updateRole,
   changePassword,
   searchUsers,
   updateField,
+  getUserByIdController,
 };

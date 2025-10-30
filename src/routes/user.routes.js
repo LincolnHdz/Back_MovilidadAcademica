@@ -7,6 +7,7 @@ const {
   changePassword,
   searchUsers,
   updateField,
+  getUserByIdController,
 } = require("../controllers/user.controllers");
 
 router.get("/", (req, res) => res.send("Ruta /api/users funcionando ✅"));
@@ -15,5 +16,6 @@ router.patch("/:id/rol", authMiddleware, requireRole(["administrador"]), updateR
 router.patch("/:id/field", authMiddleware, updateField);
 router.patch("/:id/password", authMiddleware, changePassword);
 router.get("/search", authMiddleware, requireRole(["administrador"]), searchUsers);
+router.get("/:id", authMiddleware, getUserByIdController);
 
 module.exports = router;
