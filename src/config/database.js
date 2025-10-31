@@ -34,7 +34,7 @@ const query = async (text, params) => {
       code: err.code,
       detail: err.detail,
       position: err.position,
-      stack: err.stack
+      stack: err.stack,
     });
     throw err;
   }
