@@ -331,8 +331,10 @@ router.get("/filter-options", async (req, res) => {
         "SELECT DISTINCT tipo_movilidad FROM users WHERE tipo_movilidad IS NOT NULL ORDER BY tipo_movilidad"
       ),
       query("SELECT DISTINCT estado FROM applications ORDER BY estado"),
+      // Nota: en la base actual, las aplicaciones tienen cicloEscolarInicio/Final.
+      // Usaremos el campo normalizado en users.ciclo_escolar para opciones de filtro.
       query(
-        "SELECT DISTINCT cicloEscolar FROM applications WHERE cicloEscolar IS NOT NULL ORDER BY cicloEscolar DESC"
+        "SELECT DISTINCT ciclo_escolar FROM users WHERE ciclo_escolar IS NOT NULL ORDER BY ciclo_escolar DESC"
       ),
     ]);
 
@@ -344,7 +346,7 @@ router.get("/filter-options", async (req, res) => {
         carreras: carreras.rows,
         tiposMovilidad: tiposMovilidad.rows.map((r) => r.tipo_movilidad),
         estadosAplicacion: estadosAplicacion.rows.map((r) => r.estado),
-        ciclosEscolares: ciclosEscolares.rows.map((r) => r.cicloescolar),
+        ciclosEscolares: ciclosEscolares.rows.map((r) => r.ciclo_escolar),
       },
     });
   } catch (error) {
