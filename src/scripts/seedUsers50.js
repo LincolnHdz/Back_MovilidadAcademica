@@ -89,9 +89,6 @@ async function seedUsers50() {
     const carrera_id = ids.carreras.length ? randomOf(ids.carreras) : null;
     const beca_id = Math.random() < 0.2 && ids.becas.length ? randomOf(ids.becas) : null;
 
-    // Opcionalmente llenar ciclo_escolar como etiqueta simple (no afecta gráficas de applications)
-    const ciclo_escolar = Math.random() < 0.5 ? `20${20 + (i % 5)}-${20 + ((i + 1) % 5)}` : null;
-
     try {
       const u = await createUser({
         nombres,
@@ -103,7 +100,6 @@ async function seedUsers50() {
         password,
         rol,
         tipo_movilidad,
-        ciclo_escolar,
         ciclo_escolar_inicio: null,
         ciclo_escolar_final: null,
         universidad_id,

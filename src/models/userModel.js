@@ -6,8 +6,8 @@ const createUserTable = async () => {
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         nombres VARCHAR(255) NOT NULL,
-        apellido_paterno VARCHAR(255) NOT NULL,
-        apellido_materno VARCHAR(255) NOT NULL,
+        apellido_paterno VARCHAR(255),
+        apellido_materno VARCHAR(255),
         clave VARCHAR(10) UNIQUE,
         telefono VARCHAR(15),
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -16,7 +16,6 @@ const createUserTable = async () => {
         tipo_movilidad VARCHAR(50) CHECK (tipo_movilidad IN ('movilidad_internacional', 'movilidad_virtual', 'visitante_nacional', 'visitante_internacional', NULL)),
         ciclo_escolar_inicio VARCHAR(20),
         ciclo_escolar_final VARCHAR(20),
-        ciclo_escolar VARCHAR(20),
         universidad_id INTEGER REFERENCES universidades(id) ON DELETE SET NULL,
         facultad_id INTEGER REFERENCES facultades(id) ON DELETE SET NULL,
         carrera_id INTEGER REFERENCES carreras(id) ON DELETE SET NULL,
@@ -32,7 +31,7 @@ const createUser = async (userData) => {
   const {
     nombres, apellido_paterno, apellido_materno,
     clave, telefono, email, password, rol,
-    tipo_movilidad, ciclo_escolar, ciclo_escolar_inicio, ciclo_escolar_final,
+    tipo_movilidad, ciclo_escolar_inicio, ciclo_escolar_final,
     universidad_id, facultad_id, carrera_id, beca_id
   } = userData;
 
@@ -49,14 +48,14 @@ const createUser = async (userData) => {
   const newUser = await query(
     `INSERT INTO users (
       nombres, apellido_paterno, apellido_materno, clave, telefono, email, password, rol,
-      tipo_movilidad, ciclo_escolar, ciclo_escolar_inicio, ciclo_escolar_final,
+      tipo_movilidad, ciclo_escolar_inicio, ciclo_escolar_final,
       universidad_id, facultad_id, carrera_id, beca_id
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
     RETURNING *`,
     [
       nombres, apellido_paterno, apellido_materno, clave, telefono, email, hashedPassword, rol,
-      tipo_movilidad, ciclo_escolar, ciclo_escolar_inicio, ciclo_escolar_final,
+      tipo_movilidad, ciclo_escolar_inicio, ciclo_escolar_final,
       universidad_id, facultad_id, carrera_id, beca_id
     ]
   );
