@@ -85,7 +85,21 @@ const getUsersByRole = async (rol) =>
 const updateUserRole = async (id, rol) =>
   (await query("UPDATE users SET rol=$1, updated_at=CURRENT_TIMESTAMP WHERE id=$2 RETURNING *", [rol, id])).rows[0];
 
-const validatePassword = (plain, hashed) => bcrypt.compare(plain, hashed);
+const validatePassword = async (plain, hashed) => {
+  // Primero intentar comparar con bcrypt (contraseñas hasheadas)
+  try {
+    const isValidBcrypt = await bcrypt.compare(plain, hashed);
+    if (isValidBcrypt) {
+      return true;
+    }
+  } catch (error) {
+    // Si falla bcrypt, podría ser porque no es un hash válido
+    console.log("No es un hash de bcrypt válido, intentando comparación directa");
+  }
+  
+  // Si bcrypt falla o retorna false, comparar directamente (contraseñas en texto plano)
+  return plain === hashed;
+};
 
 const updateUserField = async (id, field, value) => {
   const result = await query(

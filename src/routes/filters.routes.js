@@ -29,7 +29,7 @@ router.get("/facultades", async (req, res) => {
 
 // Carreras (público)
 router.get("/carreras", async (req, res) => {
-  const { ok, rows, error } = await safeQuery("SELECT id, nombre FROM carreras ORDER BY nombre");
+  const { ok, rows, error } = await safeQuery("SELECT id, nombre, facultad_id FROM carreras ORDER BY nombre");
   if (!ok) return res.status(500).json({ success: false, message: "Error al obtener carreras", error: error.message });
   res.json({ success: true, data: rows });
 });
@@ -50,9 +50,9 @@ router.get("/tipo-movilidad", async (req, res) => {
 
 // Obtener ciclos escolares únicos desde users (público)
 router.get("/ciclos", async (req, res) => {
-  const { ok, rows, error } = await safeQuery("SELECT DISTINCT ciclo_escolar FROM users WHERE ciclo_escolar IS NOT NULL ORDER BY ciclo_escolar");
+  const { ok, rows, error } = await safeQuery("SELECT DISTINCT ciclo FROM (SELECT ciclo_escolar_inicio AS ciclo FROM users WHERE ciclo_escolar_inicio IS NOT NULL UNION SELECT ciclo_escolar_final AS ciclo FROM users WHERE ciclo_escolar_final IS NOT NULL) AS ciclos ORDER BY ciclo");
   if (!ok) return res.status(500).json({ success: false, message: "Error al obtener ciclos", error: error.message });
-  res.json({ success: true, data: rows.map(r => r.ciclo_escolar).filter(Boolean) });
+  res.json({ success: true, data: rows.map(r => r.ciclo).filter(Boolean) });
 });
 
 module.exports = router;

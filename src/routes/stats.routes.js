@@ -19,10 +19,7 @@ router.get("/users/by-universidad", async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo usuarios por universidad:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener usuarios por universidad" });
   }
 });
 
@@ -38,10 +35,7 @@ router.get("/users/by-facultad", async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo usuarios por facultad:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener usuarios por facultad" });
   }
 });
 
@@ -49,55 +43,32 @@ router.get("/users/by-facultad", async (req, res) => {
 router.get("/users/by-carrera", async (req, res) => {
   try {
     const result = await query(
-      `SELECT c.id, c.nombre AS label, COUNT(us.id) AS value
+      `SELECT c.id, c.nombre AS label, c.facultad_id, COUNT(us.id) AS value
        FROM carreras c
        LEFT JOIN users us ON us.carrera_id = c.id
-       GROUP BY c.id, c.nombre
+       GROUP BY c.id, c.nombre, c.facultad_id
        ORDER BY c.nombre`
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo usuarios por carrera:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener usuarios por carrera" });
   }
 });
 
-// Aplicaciones por estado
-router.get("/applications/by-estado", async (req, res) => {
-  try {
-    const result = await query(
-      `SELECT estado AS label, COUNT(*) AS value
-       FROM applications
-       GROUP BY estado
-       ORDER BY value DESC`
-    );
-    return res.json({ success: true, data: result.rows });
-  } catch (error) {
-    console.error("Error obteniendo aplicaciones por estado:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
-  }
-});
 
 // Aplicaciones por ciclo escolar
 router.get("/applications/by-ciclo", async (req, res) => {
   try {
     const result = await query(
-      `SELECT cicloEscolar AS label, COUNT(*) AS value
+      `SELECT COALESCE(cicloEscolarInicio, cicloEscolarFinal) AS label, COUNT(*) AS value
        FROM applications
-       WHERE cicloEscolar IS NOT NULL
-       GROUP BY cicloEscolar
-       ORDER BY cicloEscolar DESC`
+       WHERE cicloEscolarInicio IS NOT NULL OR cicloEscolarFinal IS NOT NULL
+       GROUP BY COALESCE(cicloEscolarInicio, cicloEscolarFinal)
+       ORDER BY label DESC`
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo aplicaciones por ciclo:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener aplicaciones por ciclo" });
   }
 });
 
@@ -117,10 +88,7 @@ router.get("/users/by-tipo-movilidad", async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo usuarios por tipo de movilidad:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener usuarios por tipo de movilidad" });
   }
 });
 
@@ -138,10 +106,7 @@ router.get("/applications/by-month", async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo aplicaciones por mes:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener aplicaciones por mes" });
   }
 });
 
@@ -159,10 +124,7 @@ router.get("/users/by-month", async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo usuarios por mes:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener usuarios por mes" });
   }
 });
 
@@ -177,122 +139,147 @@ router.get("/filtered", async (req, res) => {
       universidad_id,
       facultad_id,
       carrera_id,
+      beca_id,
       tipo_movilidad,
-      estado_aplicacion,
-      ciclo_escolar,
+      ciclo_escolar_inicio,
+      ciclo_escolar_final,
     } = req.query;
 
     let query_base = "";
-    let where_conditions = [];
     let params = [];
     let param_index = 1;
 
-    // Construir condiciones WHERE
-    if (fecha_inicio) {
-      where_conditions.push(`created_at >= $${param_index++}`);
-      params.push(fecha_inicio);
-    }
-    if (fecha_fin) {
-      where_conditions.push(`created_at <= $${param_index++}`);
-      params.push(fecha_fin);
-    }
-    if (universidad_id) {
-      where_conditions.push(`universidad_id = $${param_index++}`);
-      params.push(universidad_id);
-    }
-    if (facultad_id) {
-      where_conditions.push(`facultad_id = $${param_index++}`);
-      params.push(facultad_id);
-    }
-    if (carrera_id) {
-      where_conditions.push(`carrera_id = $${param_index++}`);
-      params.push(carrera_id);
-    }
-    if (tipo_movilidad) {
-      where_conditions.push(`tipo_movilidad = $${param_index++}`);
-      params.push(tipo_movilidad);
-    }
-    if (estado_aplicacion) {
-      where_conditions.push(`estado = $${param_index++}`);
-      params.push(estado_aplicacion);
-    }
-    if (ciclo_escolar) {
-      where_conditions.push(`cicloEscolar = $${param_index++}`);
-      params.push(ciclo_escolar);
-    }
-
-    const where_clause =
-      where_conditions.length > 0
-        ? `WHERE ${where_conditions.join(" AND ")}`
-        : "";
-
     if (tipo === "users") {
+      const conditions = [];
+      
+      if (fecha_inicio) {
+        conditions.push(`us.created_at >= $${param_index++}`);
+        params.push(fecha_inicio);
+      }
+      if (fecha_fin) {
+        conditions.push(`us.created_at <= $${param_index++}`);
+        params.push(fecha_fin);
+      }
+      if (universidad_id) {
+        conditions.push(`us.universidad_id = $${param_index++}`);
+        params.push(universidad_id);
+      }
+      if (facultad_id) {
+        conditions.push(`us.facultad_id = $${param_index++}`);
+        params.push(facultad_id);
+      }
+      if (carrera_id) {
+        conditions.push(`us.carrera_id = $${param_index++}`);
+        params.push(carrera_id);
+      }
+      if (beca_id) {
+        conditions.push(`us.beca_id = $${param_index++}`);
+        params.push(beca_id);
+      }
+      if (tipo_movilidad) {
+        conditions.push(`us.tipo_movilidad = $${param_index++}`);
+        params.push(tipo_movilidad);
+      }
+      if (ciclo_escolar_inicio) {
+        conditions.push(`us.ciclo_escolar_inicio = $${param_index++}`);
+        params.push(ciclo_escolar_inicio);
+      }
+      if (ciclo_escolar_final) {
+        conditions.push(`us.ciclo_escolar_final = $${param_index++}`);
+        params.push(ciclo_escolar_final);
+      }
+
+      const where_clause = conditions.length > 0 ? `AND ${conditions.join(" AND ")}` : "";
+
       if (agrupacion === "universidad") {
         query_base = `
           SELECT u.id, u.nombre AS label, COUNT(us.id) AS value
           FROM universidades u
-          LEFT JOIN users us ON us.universidad_id = u.id ${where_clause
-            .replace("created_at", "us.created_at")
-            .replace("universidad_id", "us.universidad_id")
-            .replace("facultad_id", "us.facultad_id")
-            .replace("carrera_id", "us.carrera_id")
-            .replace("tipo_movilidad", "us.tipo_movilidad")}
+          LEFT JOIN users us ON us.universidad_id = u.id ${where_clause}
           GROUP BY u.id, u.nombre
-          ORDER BY u.nombre
-        `;
+          ORDER BY u.nombre`;
       } else if (agrupacion === "facultad") {
         query_base = `
           SELECT f.id, f.nombre AS label, COUNT(us.id) AS value
           FROM facultades f
-          LEFT JOIN users us ON us.facultad_id = f.id ${where_clause
-            .replace("created_at", "us.created_at")
-            .replace("universidad_id", "us.universidad_id")
-            .replace("facultad_id", "us.facultad_id")
-            .replace("carrera_id", "us.carrera_id")
-            .replace("tipo_movilidad", "us.tipo_movilidad")}
+          LEFT JOIN users us ON us.facultad_id = f.id ${where_clause}
           GROUP BY f.id, f.nombre
-          ORDER BY f.nombre
-        `;
+          ORDER BY f.nombre`;
       } else if (agrupacion === "carrera") {
         query_base = `
-          SELECT c.id, c.nombre AS label, COUNT(us.id) AS value
+          SELECT c.id, c.nombre AS label, c.facultad_id, COUNT(us.id) AS value
           FROM carreras c
-          LEFT JOIN users us ON us.carrera_id = c.id ${where_clause
-            .replace("created_at", "us.created_at")
-            .replace("universidad_id", "us.universidad_id")
-            .replace("facultad_id", "us.facultad_id")
-            .replace("carrera_id", "us.carrera_id")
-            .replace("tipo_movilidad", "us.tipo_movilidad")}
-          GROUP BY c.id, c.nombre
-          ORDER BY c.nombre
-        `;
+          LEFT JOIN users us ON us.carrera_id = c.id ${where_clause}
+          GROUP BY c.id, c.nombre, c.facultad_id
+          ORDER BY c.nombre`;
+      } else if (agrupacion === "tipo_movilidad") {
+        query_base = `
+          SELECT 
+            CASE 
+              WHEN tipo_movilidad IS NULL THEN 'Sin especificar'
+              ELSE tipo_movilidad 
+            END AS label, 
+            COUNT(*) AS value
+          FROM users
+          ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ").replace(/us\./g, '')}` : ''}
+          GROUP BY tipo_movilidad
+          ORDER BY value DESC`;
       }
     } else if (tipo === "applications") {
+      const conditions = [];
+      params = [];
+      param_index = 1;
+
+      if (fecha_inicio) {
+        conditions.push(`created_at >= $${param_index++}`);
+        params.push(fecha_inicio);
+      }
+      if (fecha_fin) {
+        conditions.push(`created_at <= $${param_index++}`);
+        params.push(fecha_fin);
+      }
+      if (ciclo_escolar_inicio) {
+        conditions.push(`cicloEscolarInicio = $${param_index++}`);
+        params.push(ciclo_escolar_inicio);
+      }
+      if (ciclo_escolar_final) {
+        conditions.push(`cicloEscolarFinal = $${param_index++}`);
+        params.push(ciclo_escolar_final);
+      }
+
+      const where_clause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
       if (agrupacion === "estado") {
         query_base = `
           SELECT estado AS label, COUNT(*) AS value
           FROM applications
           ${where_clause}
           GROUP BY estado
-          ORDER BY value DESC
-        `;
+          ORDER BY value DESC`;
       } else if (agrupacion === "ciclo") {
+        const ciclo_condition = where_clause 
+          ? `${where_clause} AND (cicloEscolarInicio IS NOT NULL OR cicloEscolarFinal IS NOT NULL)`
+          : "WHERE (cicloEscolarInicio IS NOT NULL OR cicloEscolarFinal IS NOT NULL)";
         query_base = `
-          SELECT cicloEscolar AS label, COUNT(*) AS value
+          SELECT COALESCE(cicloEscolarInicio, cicloEscolarFinal) AS label, COUNT(*) AS value
           FROM applications
-          ${where_clause}
-          WHERE cicloEscolar IS NOT NULL
-          GROUP BY cicloEscolar
-          ORDER BY cicloEscolar DESC
-        `;
+          ${ciclo_condition}
+          GROUP BY COALESCE(cicloEscolarInicio, cicloEscolarFinal)
+          ORDER BY label DESC`;
       } else if (agrupacion === "universidad") {
         query_base = `
           SELECT universidad AS label, COUNT(*) AS value
           FROM applications
           ${where_clause}
           GROUP BY universidad
-          ORDER BY value DESC
-        `;
+          ORDER BY value DESC`;
+      } else if (agrupacion === "mes") {
+        query_base = `
+          SELECT TO_CHAR(created_at, 'YYYY-MM') AS label, COUNT(*) AS value
+          FROM applications
+          ${where_clause || "WHERE created_at >= NOW() - INTERVAL '12 months'"}
+          GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+          ORDER BY label`;
       }
     }
 
@@ -306,10 +293,10 @@ router.get("/filtered", async (req, res) => {
     const result = await query(query_base, params);
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo estadísticas filtradas:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Error al obtener estadísticas" 
+    });
   }
 });
 
@@ -320,22 +307,23 @@ router.get("/filter-options", async (req, res) => {
       universidades,
       facultades,
       carreras,
+      becas,
       tiposMovilidad,
-      estadosAplicacion,
-      ciclosEscolares,
+      ciclosEscolaresInicio,
+      ciclosEscolaresFinal,
     ] = await Promise.all([
       query("SELECT id, nombre FROM universidades ORDER BY nombre"),
       query("SELECT id, nombre FROM facultades ORDER BY nombre"),
-      query("SELECT id, nombre FROM carreras ORDER BY nombre"),
-      query(
-        "SELECT DISTINCT tipo_movilidad FROM users WHERE tipo_movilidad IS NOT NULL ORDER BY tipo_movilidad"
-      ),
-      query("SELECT DISTINCT estado FROM applications ORDER BY estado"),
-      // Nota: en la base actual, las aplicaciones tienen cicloEscolarInicio/Final.
-      // Usaremos el campo normalizado en users.ciclo_escolar para opciones de filtro.
-      query(
-        "SELECT DISTINCT ciclo_escolar FROM users WHERE ciclo_escolar IS NOT NULL ORDER BY ciclo_escolar DESC"
-      ),
+      query("SELECT id, nombre, facultad_id FROM carreras ORDER BY nombre"),
+      query("SELECT id, nombre FROM becas ORDER BY nombre"),
+      query("SELECT DISTINCT tipo_movilidad FROM users WHERE tipo_movilidad IS NOT NULL ORDER BY tipo_movilidad"),
+      query("SELECT DISTINCT ciclo_escolar_inicio FROM users WHERE ciclo_escolar_inicio IS NOT NULL ORDER BY ciclo_escolar_inicio DESC"),
+      query("SELECT DISTINCT ciclo_escolar_final FROM users WHERE ciclo_escolar_final IS NOT NULL ORDER BY ciclo_escolar_final DESC"),
+    ]);
+
+    const ciclosUnicos = new Set([
+      ...ciclosEscolaresInicio.rows.map((r) => r.ciclo_escolar_inicio),
+      ...ciclosEscolaresFinal.rows.map((r) => r.ciclo_escolar_final),
     ]);
 
     return res.json({
@@ -344,16 +332,16 @@ router.get("/filter-options", async (req, res) => {
         universidades: universidades.rows,
         facultades: facultades.rows,
         carreras: carreras.rows,
+        becas: becas.rows,
         tiposMovilidad: tiposMovilidad.rows.map((r) => r.tipo_movilidad),
-        estadosAplicacion: estadosAplicacion.rows.map((r) => r.estado),
-        ciclosEscolares: ciclosEscolares.rows.map((r) => r.ciclo_escolar),
+        ciclosEscolares: Array.from(ciclosUnicos).sort().reverse(),
       },
     });
   } catch (error) {
-    console.error("Error obteniendo opciones de filtros:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Error al obtener opciones de filtros" 
+    });
   }
 });
 
@@ -372,10 +360,7 @@ router.get("/visitors/pages", async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo páginas más visitadas:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener páginas visitadas" });
   }
 });
 
@@ -419,10 +404,7 @@ router.get("/visitors/period", async (req, res) => {
 
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo visitas por período:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener visitas por período" });
   }
 });
 
@@ -441,10 +423,7 @@ router.get("/visitors/hourly", async (req, res) => {
 
     return res.json({ success: true, data: result.rows });
   } catch (error) {
-    console.error("Error obteniendo visitas por hora:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener visitas por hora" });
   }
 });
 
@@ -463,10 +442,7 @@ router.get("/visitors/summary", async (req, res) => {
 
     return res.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error("Error obteniendo resumen de visitantes:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success: false, message: "Error al obtener resumen de visitantes" });
   }
 });
 
