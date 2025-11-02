@@ -8,10 +8,12 @@ const {
   searchUsers,
   updateField,
   getUserByIdController,
+  importUsersController,
 } = require("../controllers/user.controllers");
 
-router.get("/", (req, res) => res.send("Ruta /api/users funcionando ✅"));
+router.get("/", (req, res) => res.send("Ruta /api/users funcionando"));
 router.get("/all", authMiddleware, requireRole(["administrador"]), getAllUsersController);
+router.post("/import", authMiddleware, requireRole(["administrador"]), importUsersController);
 router.patch("/:id/rol", authMiddleware, requireRole(["administrador"]), updateRole);
 router.patch("/:id/field", authMiddleware, updateField);
 router.patch("/:id/password", authMiddleware, changePassword);
