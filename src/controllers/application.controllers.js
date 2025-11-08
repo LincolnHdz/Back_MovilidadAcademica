@@ -111,8 +111,70 @@ const addApplication = async (req, res) => {
 
 const getAllApplications = async (req, res) => {
   try {
-    // JOIN para traer datos relevantes del usuario junto con la solicitud
-    const result = await query(`
+    // Extraer filtros de query params
+    const { 
+      facultad_id, 
+      carrera_id, 
+      universidad_id, 
+      beca_id, 
+      tipo_movilidad,
+      ciclo_escolar_inicio,
+      ciclo_escolar_final
+    } = req.query;
+
+    // Construir condiciones WHERE dinámicamente
+    let whereConditions = [];
+    let params = [];
+    let paramCount = 0;
+
+    if (facultad_id) {
+      paramCount++;
+      params.push(facultad_id);
+      whereConditions.push(`u.facultad_id = $${paramCount}`);
+    }
+
+    if (carrera_id) {
+      paramCount++;
+      params.push(carrera_id);
+      whereConditions.push(`u.carrera_id = $${paramCount}`);
+    }
+
+    if (universidad_id) {
+      paramCount++;
+      params.push(universidad_id);
+      whereConditions.push(`u.universidad_id = $${paramCount}`);
+    }
+
+    if (beca_id) {
+      paramCount++;
+      params.push(beca_id);
+      whereConditions.push(`u.beca_id = $${paramCount}`);
+    }
+
+    if (tipo_movilidad) {
+      paramCount++;
+      params.push(tipo_movilidad);
+      whereConditions.push(`u.tipo_movilidad = $${paramCount}`);
+    }
+
+    if (ciclo_escolar_inicio) {
+      paramCount++;
+      params.push(ciclo_escolar_inicio);
+      whereConditions.push(`u.ciclo_escolar_inicio = $${paramCount}`);
+    }
+
+    if (ciclo_escolar_final) {
+      paramCount++;
+      params.push(ciclo_escolar_final);
+      whereConditions.push(`u.ciclo_escolar_final = $${paramCount}`);
+    }
+
+    const whereClause = whereConditions.length > 0 
+      ? `WHERE ${whereConditions.join(' AND ')}` 
+      : '';
+
+    // JOIN mejorado para traer datos de catálogos
+    const queryText = `
       SELECT a.*, 
         u.nombres, 
         u.apellido_paterno, 
@@ -122,14 +184,35 @@ const getAllApplications = async (req, res) => {
         u.clave as user_clave, 
         u.rol,
         u.ciclo_escolar_inicio AS user_ciclo_escolar_inicio,
-        u.ciclo_escolar_final AS user_ciclo_escolar_final
+        u.ciclo_escolar_final AS user_ciclo_escolar_final,
+        u.facultad_id,
+        u.carrera_id,
+        u.universidad_id,
+        u.beca_id,
+        u.tipo_movilidad,
+        f.nombre AS facultad_nombre,
+        c.nombre AS carrera_nombre,
+        uni.nombre AS universidad_nombre,
+        b.nombre AS beca_nombre
       FROM applications a
       LEFT JOIN users u ON a.userid = u.id
+      LEFT JOIN facultades f ON u.facultad_id = f.id
+      LEFT JOIN carreras c ON u.carrera_id = c.id
+      LEFT JOIN universidades uni ON u.universidad_id = uni.id
+      LEFT JOIN becas b ON u.beca_id = b.id
+      ${whereClause}
       ORDER BY a.created_at DESC
-    `);
+    `;
+
+    console.log('Query con filtros:', queryText);
+    console.log('Parámetros:', params);
+
+    const result = await query(queryText, params);
+    
     res.json({ 
       success: true,
-      data: result.rows 
+      data: result.rows,
+      filters: req.query // Devolver filtros aplicados para referencia
     });
   } catch (error) {
     console.error("Error al obtener todas las solicitudes:", error);
