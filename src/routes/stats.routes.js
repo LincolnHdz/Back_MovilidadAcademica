@@ -1,8 +1,16 @@
 const express = require("express");
 const { query } = require("../config/database");
+const fileUpload = require('express-fileupload');
 const { authMiddleware, requireRole } = require("../middleware/authMiddleware");
+const { sendPdfEmail } = require("../controllers/stats.controllers");
 
 const router = express.Router();
+
+router.use(fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB máximo
+    abortOnLimit: true,
+    createParentPath: true
+  }));
 
 // Todas las rutas de este router requieren autenticación y rol administrador
 router.use(authMiddleware, requireRole(["administrador"]));
@@ -445,5 +453,10 @@ router.get("/visitors/summary", async (req, res) => {
     return res.status(500).json({ success: false, message: "Error al obtener resumen de visitantes" });
   }
 });
+
+ // Configurar middleware para archivo
+  
+  // Ruta para enviar PDF por correo
+  router.post('/send-pdf-email', sendPdfEmail);
 
 module.exports = router;
