@@ -216,4 +216,249 @@ const sendPdfEmail = async (req, res) => {
   }
 };
 
-module.exports = { sendPdfEmail };
+// === OBTENER DATOS DE MOVILIDAD INTERNACIONAL/VIRTUAL PARA REPORTES ===
+const getMovilidadReportData = async (req, res) => {
+  try {
+    const { 
+      tipo_movilidad,
+      universidad_id,
+      facultad_id,
+      carrera_id,
+      beca_id,
+      ciclo_escolar_inicio,
+      ciclo_escolar_final,
+      fecha_inicio,
+      fecha_fin
+    } = req.query;
+
+    if (!tipo_movilidad || !["movilidad_internacional", "movilidad_virtual"].includes(tipo_movilidad)) {
+      return res.status(400).json({
+        success: false,
+        message: "tipo_movilidad debe ser 'movilidad_internacional' o 'movilidad_virtual'"
+      });
+    }
+
+    const { query } = require("../config/database");
+    
+    // Construir query dinámicamente con filtros
+    let queryText = `
+      SELECT 
+        u.id,
+        u.nombres,
+        u.apellido_paterno,
+        u.apellido_materno,
+        u.clave,
+        u.tipo_movilidad,
+        u.ciclo_escolar_inicio,
+        u.ciclo_escolar_final,
+        c.nombre as carrera,
+        b.nombre as beca,
+        a.universidad,
+        a.paisdestino,
+        a.materiasInteres::text as materiasinteres
+      FROM users u
+      LEFT JOIN carreras c ON u.carrera_id = c.id
+      LEFT JOIN becas b ON u.beca_id = b.id
+      LEFT JOIN applications a ON u.id = a.userId
+      WHERE u.tipo_movilidad = $1
+    `;
+    
+    const params = [tipo_movilidad];
+    let paramIndex = 2;
+    
+    // Aplicar filtros
+    if (universidad_id) {
+      queryText += ` AND u.universidad_id = $${paramIndex}`;
+      params.push(universidad_id);
+      paramIndex++;
+    }
+    
+    if (facultad_id) {
+      queryText += ` AND u.facultad_id = $${paramIndex}`;
+      params.push(facultad_id);
+      paramIndex++;
+    }
+    
+    if (carrera_id) {
+      queryText += ` AND u.carrera_id = $${paramIndex}`;
+      params.push(carrera_id);
+      paramIndex++;
+    }
+    
+    if (beca_id) {
+      queryText += ` AND u.beca_id = $${paramIndex}`;
+      params.push(beca_id);
+      paramIndex++;
+    }
+    
+    if (ciclo_escolar_inicio) {
+      queryText += ` AND u.ciclo_escolar_inicio = $${paramIndex}`;
+      params.push(ciclo_escolar_inicio);
+      paramIndex++;
+    }
+    
+    if (ciclo_escolar_final) {
+      queryText += ` AND u.ciclo_escolar_final = $${paramIndex}`;
+      params.push(ciclo_escolar_final);
+      paramIndex++;
+    }
+    
+    if (fecha_inicio) {
+      queryText += ` AND u.created_at >= $${paramIndex}`;
+      params.push(fecha_inicio);
+      paramIndex++;
+    }
+    
+    if (fecha_fin) {
+      queryText += ` AND u.created_at <= $${paramIndex}`;
+      params.push(fecha_fin);
+      paramIndex++;
+    }
+    
+    queryText += ` ORDER BY u.apellido_paterno, u.apellido_materno, u.nombres`;
+    
+    const result = await query(queryText, params);
+
+    return res.json({
+      success: true,
+      message: `Datos de ${tipo_movilidad} obtenidos (${result.rows.length} registros)`,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error("Error al obtener datos de movilidad:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener datos de movilidad",
+      error: error.message
+    });
+  }
+};
+
+// === OBTENER DATOS DE VISITANTES PARA REPORTES ===
+const getVisitantesReportData = async (req, res) => {
+  try {
+    const { 
+      tipo_movilidad,
+      universidad_id,
+      facultad_id,
+      carrera_id,
+      beca_id,
+      ciclo_escolar_inicio,
+      ciclo_escolar_final,
+      fecha_inicio,
+      fecha_fin
+    } = req.query;
+
+    if (!tipo_movilidad || !["visitante_nacional", "visitante_internacional"].includes(tipo_movilidad)) {
+      return res.status(400).json({
+        success: false,
+        message: "tipo_movilidad debe ser 'visitante_nacional' o 'visitante_internacional'"
+      });
+    }
+
+    const { query } = require("../config/database");
+    
+    // Construir query dinámicamente con filtros
+    let queryText = `
+      SELECT 
+        u.id,
+        u.nombres,
+        u.apellido_paterno,
+        u.apellido_materno,
+        u.tipo_movilidad,
+        u.ciclo_escolar_inicio,
+        u.ciclo_escolar_final,
+        c.nombre as carrera,
+        vi.pais_origen,
+        vi.fecha_nacimiento,
+        vi.preparatoria,
+        vi.entidad_federativa,
+        vi.nombre_tutor,
+        vi.dni_curp,
+        vi.sexo,
+        a.materiasInteres::text as materiasinteres
+      FROM users u
+      LEFT JOIN carreras c ON u.carrera_id = c.id
+      LEFT JOIN visitantes_info vi ON u.id = vi.user_id
+      LEFT JOIN applications a ON u.id = a.userId
+      WHERE u.tipo_movilidad = $1
+    `;
+    
+    const params = [tipo_movilidad];
+    let paramIndex = 2;
+    
+    // Aplicar filtros
+    if (universidad_id) {
+      queryText += ` AND u.universidad_id = $${paramIndex}`;
+      params.push(universidad_id);
+      paramIndex++;
+    }
+    
+    if (facultad_id) {
+      queryText += ` AND u.facultad_id = $${paramIndex}`;
+      params.push(facultad_id);
+      paramIndex++;
+    }
+    
+    if (carrera_id) {
+      queryText += ` AND u.carrera_id = $${paramIndex}`;
+      params.push(carrera_id);
+      paramIndex++;
+    }
+    
+    if (beca_id) {
+      queryText += ` AND u.beca_id = $${paramIndex}`;
+      params.push(beca_id);
+      paramIndex++;
+    }
+    
+    if (ciclo_escolar_inicio) {
+      queryText += ` AND u.ciclo_escolar_inicio = $${paramIndex}`;
+      params.push(ciclo_escolar_inicio);
+      paramIndex++;
+    }
+    
+    if (ciclo_escolar_final) {
+      queryText += ` AND u.ciclo_escolar_final = $${paramIndex}`;
+      params.push(ciclo_escolar_final);
+      paramIndex++;
+    }
+    
+    if (fecha_inicio) {
+      queryText += ` AND u.created_at >= $${paramIndex}`;
+      params.push(fecha_inicio);
+      paramIndex++;
+    }
+    
+    if (fecha_fin) {
+      queryText += ` AND u.created_at <= $${paramIndex}`;
+      params.push(fecha_fin);
+      paramIndex++;
+    }
+    
+    queryText += ` ORDER BY u.apellido_paterno, u.apellido_materno, u.nombres`;
+    
+    const result = await query(queryText, params);
+
+    return res.json({
+      success: true,
+      message: `Datos de ${tipo_movilidad} obtenidos (${result.rows.length} registros)`,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error("Error al obtener datos de visitantes:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener datos de visitantes",
+      error: error.message
+    });
+  }
+};
+
+module.exports = { 
+  sendPdfEmail, 
+  getMovilidadReportData, 
+  getVisitantesReportData 
+};

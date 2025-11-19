@@ -2,7 +2,11 @@ const express = require("express");
 const { query } = require("../config/database");
 const fileUpload = require('express-fileupload');
 const { authMiddleware, requireRole } = require("../middleware/authMiddleware");
-const { sendPdfEmail } = require("../controllers/stats.controllers");
+const { 
+  sendPdfEmail, 
+  getMovilidadReportData, 
+  getVisitantesReportData 
+} = require("../controllers/stats.controllers");
 
 const router = express.Router();
 
@@ -459,4 +463,8 @@ router.get("/visitors/summary", async (req, res) => {
   // Ruta para enviar PDF por correo
   router.post('/send-pdf-email', sendPdfEmail);
 
+  // Rutas para obtener datos de reportes específicos
+  router.get('/movilidad-report', getMovilidadReportData);
+  router.get('/visitantes-report', getVisitantesReportData);
+  
 module.exports = router;
