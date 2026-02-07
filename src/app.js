@@ -30,7 +30,7 @@ app.use("/api/visitantes-info", require("./routes/visitantesInfo.routes"));
 
 // Ruta de prueba
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando 🚀");
+  res.send("Servidor funcionando");
 });
 
 // Middleware para rutas no encontradas

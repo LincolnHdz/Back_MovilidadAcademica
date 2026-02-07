@@ -86,12 +86,12 @@ const sendPdfEmail = async (req, res) => {
     const maxSize = 1.8 * 1024 * 1024; // 1.8MB margen de seguridad
     
     if (pdfData.length > maxSize) {
-      console.log("⚠️ PDF muy grande, intentando comprimir...");
+      console.log("[ADVERTENCIA] PDF muy grande, intentando comprimir...");
       pdfData = await compressPdf(pdfData);
       
       if (pdfData.length > maxSize) {
         const sizeMB = (pdfData.length / 1024 / 1024).toFixed(2);
-        console.error(`❌ PDF demasiado grande: ${sizeMB} MB`);
+        console.error(`[ERROR] PDF demasiado grande: ${sizeMB} MB`);
         
         return res.status(413).json({
           success: false,
@@ -100,7 +100,7 @@ const sendPdfEmail = async (req, res) => {
       }
     }
     
-    console.log(`✓ PDF listo para envío: ${(pdfData.length / 1024 / 1024).toFixed(2)} MB`);
+    console.log(`[OK] PDF listo para envío: ${(pdfData.length / 1024 / 1024).toFixed(2)} MB`);
 
     // CONTENIDO DEL CORREO
     let contenido = `

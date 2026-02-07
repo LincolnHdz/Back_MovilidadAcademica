@@ -70,6 +70,19 @@ const addApplication = async (req, res) => {
     const userId = req.user ? req.user.id : null;
     const userClave = req.user ? req.user.clave : null;
     
+    // Verificar si el usuario ya tiene una solicitud existente que NO esté rechazada
+    if (userId) {
+      const checkExisting = `SELECT id, estado FROM applications WHERE userid = $1 AND estado != 'rechazada' ORDER BY created_at DESC LIMIT 1`;
+      const existingApp = await query(checkExisting, [userId]);
+      
+      if (existingApp.rows.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Ya tienes una solicitud activa. Solo puedes enviar una nueva solicitud si la anterior fue rechazada."
+        });
+      }
+    }
+    
     // Insertar datos
     const insertData = `
       INSERT INTO applications 

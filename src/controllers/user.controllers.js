@@ -88,13 +88,13 @@ const getUserByIdController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🔹 Trae al usuario base
+    // Trae al usuario base
     const user = await findUserById(id);
     if (!user) {
       return res.status(404).json({ success: false, message: "Usuario no encontrado" });
     }
 
-    // 🔹 Trae datos relacionados (universidad, facultad, carrera, beca)
+    // Trae datos relacionados (universidad, facultad, carrera, beca)
     const [universidad, facultad, carrera, beca] = await Promise.all([
       user.universidad_id
         ? query("SELECT id, nombre, pais FROM universidades WHERE id = $1", [user.universidad_id])
@@ -110,7 +110,7 @@ const getUserByIdController = async (req, res) => {
         : { rows: [] },
     ]);
 
-    // 🔹 Combina la información enriquecida
+    // Combina la información enriquecida
     const userDetail = {
       ...user,
       universidad: universidad.rows[0] || null,
