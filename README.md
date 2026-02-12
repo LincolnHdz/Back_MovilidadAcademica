@@ -10,8 +10,8 @@ npm -v
 La salida debe mostrar una versión v20.x.x. En caso contrario, instalar la versión LTS correspondiente desde https://nodejs.org.
 Instalación del Proyecto
 1. Clonar el repositorio:
-git clone <url-del-repositorio>
-cd <nombre-del-proyecto>
+git clone [<url-del-repositorio>](https://github.com/LincolnHdz/Back_MovilidadAcademica)
+cd Back_MovilidadAcademica
 2. Instalar dependencias:
 npm install
 Este comando instalará todas las dependencias definidas en el archivo package.json.
